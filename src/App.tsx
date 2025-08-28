@@ -1,5 +1,7 @@
+import AppRouter from "@/components/Router";
+
 function App() {
-  return <h1>Smaple</h1>;
+  return <AppRouter />;
 }
 
 export default App;
