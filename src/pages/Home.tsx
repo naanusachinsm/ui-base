@@ -2,7 +2,10 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Particles } from "@/components/magicui/particles";
+import { Meteors } from "@/components/magicui/meteors";
+import { AuroraText } from "@/components/magicui/aurora-text";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { Marquee } from "@/components/magicui/marquee";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -478,15 +481,15 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background text-foreground pt-24 pb-20 lg:pt-32 lg:pb-32">
-        {/* Particles Background */}
-        <div className="absolute inset-0 z-0">
-          <Particles
-            className="h-full w-full"
-            quantity={100}
-            staticity={50}
-            ease={50}
-            size={1.2}
-            color="hsl(var(--foreground))"
+        {/* Meteors Background */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <Meteors
+            number={20}
+            minDelay={0.2}
+            maxDelay={1.2}
+            minDuration={2}
+            maxDuration={10}
+            angle={215}
           />
         </div>
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -502,8 +505,11 @@ export default function Landing() {
                 </span>
                 <br />
                 <span className="bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
-                  Into a Revenue Machine
+                  Into a{" "}
                 </span>
+                <AuroraText className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold">
+                  Revenue Machine
+                </AuroraText>
               </motion.h1>
 
               <motion.p
@@ -523,14 +529,13 @@ export default function Landing() {
                 transition={{ duration: 0.8, delay: 0.4 }}
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4"
               >
-                <Button
-                  size="lg"
-                  className="text-lg px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
+                <ShimmerButton
+                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
                   onClick={handleTryNow}
                 >
                   Start Your Free Trial
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </ShimmerButton>
                 <Button
                   variant="outline"
                   size="lg"
@@ -701,16 +706,10 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <Marquee className="py-8" pauseOnHover={true}>
             {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.company}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                className="text-center"
-              >
-                <Card className="h-full border border-border shadow-sm hover:shadow-md transition-shadow bg-card p-6">
+              <div key={testimonial.company} className="text-center mx-4">
+                <Card className="h-full border border-border shadow-sm hover:shadow-md transition-shadow bg-card p-6 w-80">
                   <div className="text-4xl font-bold text-primary mb-2">
                     {testimonial.result}
                   </div>
@@ -725,9 +724,9 @@ export default function Landing() {
                     {testimonial.description}
                   </p>
                 </Card>
-              </motion.div>
+              </div>
             ))}
-          </div>
+          </Marquee>
         </div>
       </section>
 
