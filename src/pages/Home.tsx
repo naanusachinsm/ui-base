@@ -731,8 +731,8 @@ export default function Landing() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-6">
+      <section className="py-20 bg-background relative overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -775,13 +775,13 @@ export default function Landing() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="flex justify-center"
               >
-                <Button
-                  size="lg"
-                  className="text-xl px-12 py-6 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                <ShimmerButton
+                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
                   onClick={handleTryNow}
                 >
                   Get Started
-                </Button>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </ShimmerButton>
               </motion.div>
             </motion.div>
           </div>
@@ -1011,17 +1011,6 @@ export default function Landing() {
               </Card>
             </motion.div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-center mt-12"
-          >
-            <Button size="lg" onClick={handleTryNow}>
-              Try Any Plan Free for 14 Days
-            </Button>
-          </motion.div>
         </div>
       </section>
 
