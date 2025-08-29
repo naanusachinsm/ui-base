@@ -6,6 +6,7 @@ import { Meteors } from "@/components/magicui/meteors";
 import { AuroraText } from "@/components/magicui/aurora-text";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { Marquee } from "@/components/magicui/marquee";
+import { BackgroundLines } from "@/components/ui/background-lines";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -731,8 +732,8 @@ export default function Landing() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-background relative overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10">
+      <BackgroundLines className="py-20 min-h-[600px] flex items-center justify-center">
+        <div className="container mx-auto px-6 relative z-10 w-full">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -786,7 +787,7 @@ export default function Landing() {
             </motion.div>
           </div>
         </div>
-      </section>
+      </BackgroundLines>
 
       {/* Features Showcase Section */}
       <section className="py-20 bg-background">
