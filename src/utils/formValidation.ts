@@ -68,7 +68,7 @@ export const validateField = async <T>(
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message };
+      return { isValid: false, error: error.issues[0]?.message };
     }
     return { isValid: false, error: "Validation failed" };
   }

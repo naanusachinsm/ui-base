@@ -44,7 +44,7 @@ function Header() {
   const { theme, setTheme } = useAppStore();
 
   const handleLogin = () => {
-    navigate("/auth");
+    navigate("/dashboard");
   };
 
   const navigation = [
@@ -201,7 +201,7 @@ function Footer() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    navigate("/auth");
+    navigate("/dashboard");
   };
 
   const footerLinks = {
@@ -378,7 +378,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   const handleTryNow = () => {
-    navigate("/auth");
+    navigate("/dashboard");
   };
 
   const painPoints = [
@@ -708,7 +708,7 @@ export default function Landing() {
           </motion.div>
 
           <Marquee className="py-8" pauseOnHover={true}>
-            {testimonials.map((testimonial, index) => (
+            {testimonials.map((testimonial) => (
               <div key={testimonial.company} className="text-center mx-4">
                 <Card className="h-full border border-border shadow-sm hover:shadow-md transition-shadow bg-card p-6 w-80">
                   <div className="text-4xl font-bold text-primary mb-2">
