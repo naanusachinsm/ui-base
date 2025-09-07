@@ -1,6 +1,6 @@
-import { SectionCards } from "@/components/section-cards";
-import { DataTable } from "@/components/data-table";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { SectionCards } from "@/components/dashboard/section-cards";
+import { DataTable } from "@/components/dashboard/data-table";
+import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive";
 import dashboardData from "@/app/dashboard/data.json";
 
 const Overview = () => {

@@ -1,4 +1,4 @@
-import { TeamDataTable } from "@/components/team-data-table";
+import { TeamDataTable } from "@/components/dashboard/team-data-table";
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
 
