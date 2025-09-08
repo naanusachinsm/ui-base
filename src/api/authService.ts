@@ -1,6 +1,10 @@
 import { apiService, ApiHelpers } from "./apiService";
 import type { BaseResponse } from "./types";
 
+// API Configuration
+const API_BASE_URL = "http://localhost:4000";
+const API_VERSION_PATH = "/api/v1";
+
 // Auth request/response types
 export interface LoginRequest {
   email: string;
@@ -10,8 +14,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   access_token: {
-    token: string;
-    expiresIn?: number;
+    accessToken: string;
+    refreshToken: string;
   };
   employee: {
     id: number;
@@ -19,6 +23,7 @@ export interface LoginResponse {
     name: string;
     role: string;
     centerId: number;
+    status: string;
   };
   userType: "employee" | "student";
 }
@@ -30,7 +35,9 @@ export interface User {
   userType: "employee" | "student";
   role: string;
   centerId: number;
-  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  status?: string;
 }
 
 /**
@@ -38,47 +45,29 @@ export interface User {
  * Handles all authentication-related API calls
  */
 export class AuthService {
-  private baseURL = "http://localhost:4000/api/v1";
-
   constructor() {
     // Set the base URL for the API service
-    apiService.setBaseURL(this.baseURL);
+    apiService.setBaseURL(API_BASE_URL);
   }
 
   /**
    * Login user with email, password, and user type
    */
   async login(credentials: LoginRequest): Promise<BaseResponse<LoginResponse>> {
-    try {
-      const response = await apiService.post<LoginResponse>(
-        "/auth/login",
-        credentials
-      );
+    const response = await apiService.post<LoginResponse>(
+      `${API_VERSION_PATH}/auth/login`,
+      credentials
+    );
 
-      // If login is successful, store the auth token
-      if (
-        ApiHelpers.isSuccess(response) &&
-        response.data?.access_token?.token
-      ) {
-        apiService.setAuthToken(response.data.access_token.token);
-      }
-
-      return response;
-    } catch (error) {
-      // Handle any unexpected errors
-      return {
-        success: false,
-        statusCode: 500,
-        message: "Login failed due to network error",
-        module: "AUTH",
-        error: {
-          type: "TECHNICAL_ERROR",
-          code: "NETWORK_ERROR",
-          details: error,
-        },
-        timestamp: new Date().toISOString(),
-      };
+    // If login is successful, store the auth token
+    if (
+      ApiHelpers.isSuccess(response) &&
+      response.data?.access_token?.accessToken
+    ) {
+      apiService.setAuthToken(response.data.access_token.accessToken);
     }
+
+    return response;
   }
 
   /**
@@ -86,7 +75,7 @@ export class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      await apiService.post("/auth/logout");
+      await apiService.post("/api/v1/auth/logout");
     } catch (error) {
       // Even if logout API fails, we should clear local tokens
       console.warn("Logout API call failed:", error);
@@ -102,56 +91,26 @@ export class AuthService {
   async refreshToken(
     refreshToken: string
   ): Promise<BaseResponse<{ token: string }>> {
-    try {
-      const response = await apiService.post<{ token: string }>(
-        "/auth/refresh",
-        {
-          refreshToken,
-        }
-      );
-
-      // If refresh is successful, update the auth token
-      if (ApiHelpers.isSuccess(response) && response.data?.token) {
-        apiService.setAuthToken(response.data.token);
+    const response = await apiService.post<{ token: string }>(
+      "/api/v1/auth/refresh",
+      {
+        refreshToken,
       }
+    );
 
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        statusCode: 500,
-        message: "Token refresh failed",
-        module: "AUTH",
-        error: {
-          type: "TECHNICAL_ERROR",
-          code: "NETWORK_ERROR",
-          details: error,
-        },
-        timestamp: new Date().toISOString(),
-      };
+    // If refresh is successful, update the auth token
+    if (ApiHelpers.isSuccess(response) && response.data?.token) {
+      apiService.setAuthToken(response.data.token);
     }
+
+    return response;
   }
 
   /**
    * Get current user profile
    */
   async getCurrentUser(): Promise<BaseResponse<User>> {
-    try {
-      return await apiService.get<User>("/auth/me");
-    } catch (error) {
-      return {
-        success: false,
-        statusCode: 500,
-        message: "Failed to fetch user profile",
-        module: "AUTH",
-        error: {
-          type: "TECHNICAL_ERROR",
-          code: "NETWORK_ERROR",
-          details: error,
-        },
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return await apiService.get<User>("/api/v1/auth/me");
   }
 
   /**
@@ -181,7 +140,9 @@ export const AuthHelpers = {
         userType: userType,
         role: employee.role,
         centerId: employee.centerId,
-        token: access_token?.token,
+        accessToken: access_token?.accessToken,
+        refreshToken: access_token?.refreshToken,
+        status: employee.status,
       };
     }
     return null;
@@ -193,8 +154,11 @@ export const AuthHelpers = {
   getTokenFromResponse: (
     response: BaseResponse<LoginResponse>
   ): string | null => {
-    if (ApiHelpers.isSuccess(response) && response.data?.access_token?.token) {
-      return response.data.access_token.token;
+    if (
+      ApiHelpers.isSuccess(response) &&
+      response.data?.access_token?.accessToken
+    ) {
+      return response.data.access_token.accessToken;
     }
     return null;
   },
@@ -204,7 +168,8 @@ export const AuthHelpers = {
    */
   isLoginSuccess: (response: BaseResponse<LoginResponse>): boolean => {
     return (
-      ApiHelpers.isSuccess(response) && !!response.data?.access_token?.token
+      ApiHelpers.isSuccess(response) &&
+      !!response.data?.access_token?.accessToken
     );
   },
 };

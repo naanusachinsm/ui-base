@@ -1,4 +1,6 @@
 import type { BaseResponse, ModuleNames, ErrorTypes } from './types';
+import { API_CONFIG } from '@/config/constants';
+import { toast } from 'sonner';
 
 /**
  * Simple and reusable API service for handling HTTP requests
@@ -8,13 +10,13 @@ export class ApiService {
   private defaultHeaders: Record<string, string>;
   private timeout: number;
 
-  constructor(baseURL: string = '', defaultHeaders: Record<string, string> = {}) {
+  constructor(baseURL: string = API_CONFIG.baseUrl, defaultHeaders: Record<string, string> = {}) {
     this.baseURL = baseURL;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       ...defaultHeaders,
     };
-    this.timeout = 10000; // 10 seconds
+    this.timeout = API_CONFIG.timeout;
   }
 
   /**
@@ -79,16 +81,26 @@ export class ApiService {
       }
 
       const response = await fetch(fullUrl, requestOptions);
-      const responseData = await response.json();
+      const responseData = await response.json() as BaseResponse<T>;
 
-      // Return the response as-is since your API already returns BaseResponse format
-      return responseData as BaseResponse<T>;
+      // Handle error notifications only
+      if (!responseData.success) {
+        // Show error toast for all failed requests
+        const errorMessage = responseData.message || 'An error occurred';
+        toast.error(errorMessage);
+      }
+
+      return responseData;
     } catch (error: unknown) {
+      // Show network error toast
+      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+      toast.error(errorMessage);
+      
       // Create a basic error response if the request fails
       return {
         success: false,
         statusCode: 500,
-        message: error instanceof Error ? error.message : 'Network error occurred',
+        message: errorMessage,
         module: 'APP' as ModuleNames,
         error: {
           type: 'TECHNICAL_ERROR' as ErrorTypes,
