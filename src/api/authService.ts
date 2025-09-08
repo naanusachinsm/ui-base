@@ -34,7 +34,7 @@ export interface User {
   name: string;
   userType: "employee" | "student";
   role: string;
-  centerId: number;
+  centerId?: number;
   accessToken?: string;
   refreshToken?: string;
   status?: string;
