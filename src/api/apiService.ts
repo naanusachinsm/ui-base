@@ -17,6 +17,48 @@ export class ApiService {
       ...defaultHeaders,
     };
     this.timeout = API_CONFIG.timeout;
+    
+    // Automatically load and set access token from localStorage on initialization
+    this.initializeAuthToken();
+  }
+
+  /**
+   * Initialize auth token from localStorage
+   */
+  private initializeAuthToken(): void {
+    const token = this.getStoredToken();
+    if (token) {
+      this.setAuthToken(token);
+    }
+  }
+
+  /**
+   * Get stored access token from localStorage
+   */
+  private getStoredToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
+  }
+
+  /**
+   * Store access token in localStorage
+   */
+  private storeToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', token);
+    }
+  }
+
+  /**
+   * Remove access token from localStorage
+   */
+  private removeStoredToken(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
   }
 
   /**
@@ -27,17 +69,19 @@ export class ApiService {
   }
 
   /**
-   * Set authorization token
+   * Set authorization token and store it in localStorage
    */
   setAuthToken(token: string): void {
     this.defaultHeaders['Authorization'] = `Bearer ${token}`;
+    this.storeToken(token);
   }
 
   /**
-   * Remove authorization token
+   * Remove authorization token and clear from localStorage
    */
   removeAuthToken(): void {
     delete this.defaultHeaders['Authorization'];
+    this.removeStoredToken();
   }
 
   /**
@@ -55,6 +99,25 @@ export class ApiService {
   }
 
   /**
+   * Refresh token from localStorage (useful after login/logout)
+   */
+  refreshAuthToken(): void {
+    const token = this.getStoredToken();
+    if (token) {
+      this.defaultHeaders['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete this.defaultHeaders['Authorization'];
+    }
+  }
+
+  /**
+   * Check if user is authenticated (has valid token)
+   */
+  isAuthenticated(): boolean {
+    return !!this.getStoredToken();
+  }
+
+  /**
    * Generic request method
    */
   private async request<T = unknown>(
@@ -65,6 +128,12 @@ export class ApiService {
   ): Promise<BaseResponse<T>> {
     try {
       const fullUrl = url.startsWith('http') ? url : `${this.baseURL}${url}`;
+      
+      // Ensure we have the latest token from localStorage for each request
+      const storedToken = this.getStoredToken();
+      if (storedToken && !this.defaultHeaders['Authorization']) {
+        this.defaultHeaders['Authorization'] = `Bearer ${storedToken}`;
+      }
       
       const requestOptions: RequestInit = {
         method: method.toUpperCase(),

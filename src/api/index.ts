@@ -7,6 +7,19 @@ export { ApiService, apiService } from "./apiService";
 export { AuthService, authService, AuthHelpers } from "./authService";
 export type { LoginRequest, LoginResponse, User } from "./authService";
 
+// Organization Service
+export { OrganizationService, organizationService, OrganizationHelpers } from './organizationService';
+export type { 
+  Organization, 
+  CreateOrganizationRequest, 
+  UpdateOrganizationRequest,
+  OrganizationType,
+  OrganizationStatus,
+  Currency,
+  BillingContact,
+  OrganizationSettings
+} from './organizationService';
+
 // Types and Interfaces
 export * from "./types";
 

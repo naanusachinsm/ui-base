@@ -15,6 +15,8 @@ import {
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { TeamSwitcher } from "@/components/sidebar/team-switcher";
+import { useAppStore } from "@/stores/appStore";
+import { organizationService, OrganizationHelpers } from "@/api";
 import {
   Sidebar,
   SidebarContent,
@@ -23,67 +25,30 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
+// Organization interface
+interface Organization {
+  id: number;
+  name: string;
+  logo: React.ComponentType;
+  plan: string;
+}
+
+// Navigation data
+const navData = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
+      title: "Analytics",
+      url: "#",
       icon: BarChart3,
       isActive: true,
       items: [
         {
-          title: "Analytics",
-          url: "/dashboard/analytics",
+          title: "Overview",
+          url: "/dashboard/overview",
         },
         {
           title: "Notifications",
           url: "/dashboard/notifications",
-        },
-      ],
-    },
-    {
-      title: "User Management",
-      url: "#",
-      icon: Users,
-      items: [
-        {
-          title: "Users",
-          url: "/users",
-        },
-        {
-          title: "Students",
-          url: "/students",
-        },
-        {
-          title: "Employees",
-          url: "/employees",
-        },
-        {
-          title: "Roles & Permissions",
-          url: "/roles-permissions",
         },
       ],
     },
@@ -94,15 +59,30 @@ const data = {
       items: [
         {
           title: "Organizations",
-          url: "/organizations",
+          url: "/dashboard/organizations",
         },
         {
           title: "Centers",
-          url: "/centers",
+          url: "/dashboard/centers",
+        },
+      ],
+    },
+    {
+      title: "User Management",
+      url: "#",
+      icon: Users,
+      items: [
+        {
+          title: "Students",
+          url: "/dashboard/students",
         },
         {
-          title: "Settings",
-          url: "/settings",
+          title: "Employees",
+          url: "/dashboard/employees",
+        },
+        {
+          title: "Roles & Permissions",
+          url: "/dashboard/roles-permissions",
         },
       ],
     },
@@ -113,19 +93,19 @@ const data = {
       items: [
         {
           title: "Courses",
-          url: "/courses",
+          url: "/dashboard/courses",
         },
         {
           title: "Cohorts",
-          url: "/cohorts",
+          url: "/dashboard/cohorts",
         },
         {
           title: "Classes",
-          url: "/classes",
+          url: "/dashboard/classes",
         },
         {
           title: "Enrollments",
-          url: "/enrollments",
+          url: "/dashboard/enrollments",
         },
       ],
     },
@@ -136,15 +116,26 @@ const data = {
       items: [
         {
           title: "Enquiries",
-          url: "/enquiries",
+          url: "/dashboard/enquiries",
         },
         {
           title: "Payments",
-          url: "/payments",
+          url: "/dashboard/payments",
         },
         {
           title: "Feedback",
-          url: "/feedback",
+          url: "/dashboard/feedback",
+        },
+      ],
+    },
+    {
+      title: "System",
+      url: "#",
+      icon: Command,
+      items: [
+        {
+          title: "Audit Logs",
+          url: "/dashboard/audit-logs",
         },
       ],
     },
@@ -152,16 +143,68 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useAppStore((state) => state.user);
+  const [organizations, setOrganizations] = React.useState<Organization[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Fetch organizations on component mount
+  React.useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        setLoading(true);
+        const response = await organizationService.getOrganizations({ limit: 10 });
+        
+        if (OrganizationHelpers.isGetOrganizationsSuccess(response)) {
+          const orgsData = OrganizationHelpers.getOrganizationsFromResponse(response);
+          // Transform API data to match expected format
+          const transformedOrgs: Organization[] = orgsData.map((org, index) => ({
+            id: org.id,
+            name: org.name,
+            logo: [GalleryVerticalEnd, AudioWaveform, Building2][index % 3],
+            plan: org.status || 'Active'
+          }));
+          setOrganizations(transformedOrgs);
+        } else {
+          // Handle API error response
+          console.error('Failed to fetch organizations:', response.message);
+          setOrganizations([
+            {
+              id: 1,
+              name: "Default Organization",
+              logo: Building2,
+              plan: "Active",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch organizations:', error);
+        // Fallback to default organizations if API fails
+        setOrganizations([
+          {
+            id: 1,
+            name: "Default Organization",
+            logo: Building2,
+            plan: "Active",
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
+  
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={organizations} loading={loading} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navData.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

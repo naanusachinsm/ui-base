@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Home from "@/pages/Home";
 import { LoginPage } from "@/pages/login";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import Organizations from "@/pages/organization/Organizations";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardLayout />} />
+          <Route path="/dashboard/organizations" element={<Organizations />} />
         </Routes>
       </Suspense>
       <Toaster />

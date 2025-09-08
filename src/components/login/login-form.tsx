@@ -96,13 +96,8 @@ export function LoginForm({
           // Save user data to Zustand store
           setUser(userData);
 
-          // Store access token in localStorage for API calls
-          if (userData.accessToken) {
-            localStorage.setItem("accessToken", userData.accessToken);
-          }
-          if (userData.refreshToken) {
-            localStorage.setItem("refreshToken", userData.refreshToken);
-          }
+          // Token is automatically stored by apiService.setAuthToken() in authService.login()
+          // No need to manually store in localStorage here
 
           toast.success("Login successful! Welcome back.");
           navigate("/dashboard");

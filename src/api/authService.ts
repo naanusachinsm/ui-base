@@ -117,8 +117,7 @@ export class AuthService {
    * Check if user is authenticated (has valid token)
    */
   isAuthenticated(): boolean {
-    // This is a simple check - in a real app, you might want to validate the token
-    return !!localStorage.getItem("auth-token");
+    return apiService.isAuthenticated();
   }
 }
 

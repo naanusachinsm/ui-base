@@ -13,8 +13,119 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useLocation } from "react-router-dom";
+import { useMemo } from "react";
+
+// Navigation data for breadcrumb generation
+const navData = {
+  navMain: [
+    {
+      title: "Analytics",
+      url: "#",
+      items: [
+        { title: "Overview", url: "/dashboard/overview" },
+        { title: "Notifications", url: "/dashboard/notifications" },
+      ],
+    },
+    {
+      title: "Organization",
+      url: "#",
+      items: [
+        { title: "Organizations", url: "/dashboard/organizations" },
+        { title: "Centers", url: "/dashboard/centers" },
+      ],
+    },
+    {
+      title: "User Management",
+      url: "#",
+      items: [
+        { title: "Students", url: "/dashboard/students" },
+        { title: "Employees", url: "/dashboard/employees" },
+        { title: "Roles & Permissions", url: "/dashboard/roles-permissions" },
+      ],
+    },
+    {
+      title: "Academic",
+      url: "#",
+      items: [
+        { title: "Courses", url: "/dashboard/courses" },
+        { title: "Cohorts", url: "/dashboard/cohorts" },
+        { title: "Classes", url: "/dashboard/classes" },
+        { title: "Enrollments", url: "/dashboard/enrollments" },
+      ],
+    },
+    {
+      title: "Business",
+      url: "#",
+      items: [
+        { title: "Enquiries", url: "/dashboard/enquiries" },
+        { title: "Payments", url: "/dashboard/payments" },
+        { title: "Feedback", url: "/dashboard/feedback" },
+      ],
+    },
+    {
+      title: "System",
+      url: "#",
+      items: [
+        { title: "Audit Logs", url: "/dashboard/audit-logs" },
+      ],
+    },
+  ],
+};
+
+interface BreadcrumbItem {
+  title: string;
+  url?: string;
+  isCurrentPage?: boolean;
+}
 
 export default function DashboardLayout() {
+  const location = useLocation();
+  
+  // Generate dynamic breadcrumbs based on current path
+  const breadcrumbs = useMemo((): BreadcrumbItem[] => {
+    const path = location.pathname;
+    const breadcrumbItems: BreadcrumbItem[] = [];
+    
+    // Always start with Dashboard
+    breadcrumbItems.push({ title: "Dashboard", url: "/dashboard" });
+    
+    // If we're on the main dashboard page, return just Dashboard
+    if (path === "/dashboard") {
+      breadcrumbItems[0].isCurrentPage = true;
+      return breadcrumbItems;
+    }
+    
+    // Find the matching navigation item
+    for (const section of navData.navMain) {
+      const matchingItem = section.items?.find(item => item.url === path);
+      if (matchingItem) {
+        // Add section as intermediate breadcrumb
+        breadcrumbItems.push({ title: section.title });
+        // Add current page
+        breadcrumbItems.push({ title: matchingItem.title, isCurrentPage: true });
+        break;
+      }
+    }
+    
+    // If no match found, generate from path segments
+    if (breadcrumbItems.length === 1) {
+      const segments = path.split('/').filter(Boolean).slice(1); // Remove 'dashboard'
+      segments.forEach((segment, index) => {
+        const title = segment
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        breadcrumbItems.push({
+          title,
+          isCurrentPage: index === segments.length - 1
+        });
+      });
+    }
+    
+    return breadcrumbItems;
+  }, [location.pathname]);
+  
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -28,15 +139,20 @@ export default function DashboardLayout() {
             />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbs.map((item, index) => (
+                  <div key={item.title} className="flex items-center">
+                    {index > 0 && <BreadcrumbSeparator className="mx-2" />}
+                    <BreadcrumbItem>
+                      {item.isCurrentPage ? (
+                        <BreadcrumbPage>{item.title}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink href={item.url || "#"}>
+                          {item.title}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </div>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
