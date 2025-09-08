@@ -16,7 +16,8 @@ import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import { useAppStore } from "@/stores/appStore";
-import { organizationService, OrganizationHelpers } from "@/api";
+import { organizationService, OrganizationHelpers, apiService } from "@/api";
+import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -33,140 +34,174 @@ interface Organization {
   plan: string;
 }
 
-// Navigation data
-const navData = {
-  navMain: [
-    {
-      title: "Analytics",
-      url: "#",
-      icon: BarChart3,
-      isActive: true,
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard/overview",
-        },
-        {
-          title: "Notifications",
-          url: "/dashboard/notifications",
-        },
-      ],
-    },
-    {
-      title: "Organization",
-      url: "#",
-      icon: Building2,
-      items: [
-        {
-          title: "Organizations",
-          url: "/dashboard/organizations",
-        },
-        {
-          title: "Centers",
-          url: "/dashboard/centers",
-        },
-      ],
-    },
-    {
-      title: "User Management",
-      url: "#",
-      icon: Users,
-      items: [
-        {
-          title: "Students",
-          url: "/dashboard/students",
-        },
-        {
-          title: "Employees",
-          url: "/dashboard/employees",
-        },
-        {
-          title: "Roles & Permissions",
-          url: "/dashboard/roles-permissions",
-        },
-      ],
-    },
-    {
-      title: "Academic",
-      url: "#",
-      icon: GraduationCap,
-      items: [
-        {
-          title: "Courses",
-          url: "/dashboard/courses",
-        },
-        {
-          title: "Cohorts",
-          url: "/dashboard/cohorts",
-        },
-        {
-          title: "Classes",
-          url: "/dashboard/classes",
-        },
-        {
-          title: "Enrollments",
-          url: "/dashboard/enrollments",
-        },
-      ],
-    },
-    {
-      title: "Business",
-      url: "#",
-      icon: PieChart,
-      items: [
-        {
-          title: "Enquiries",
-          url: "/dashboard/enquiries",
-        },
-        {
-          title: "Payments",
-          url: "/dashboard/payments",
-        },
-        {
-          title: "Feedback",
-          url: "/dashboard/feedback",
-        },
-      ],
-    },
-    {
-      title: "System",
-      url: "#",
-      icon: Command,
-      items: [
-        {
-          title: "Audit Logs",
-          url: "/dashboard/audit-logs",
-        },
-      ],
-    },
-  ],
-};
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAppStore((state) => state.user);
+  const location = useLocation();
   const [organizations, setOrganizations] = React.useState<Organization[]>([]);
   const [loading, setLoading] = React.useState(true);
+
+  // Navigation data with dynamic active state
+  const navData = React.useMemo(
+    () => ({
+      navMain: [
+        {
+          title: "Analytics",
+          url: "#",
+          icon: BarChart3,
+          isActive:
+            location.pathname.startsWith("/dashboard/overview") ||
+            location.pathname.startsWith("/dashboard/notifications"),
+          items: [
+            {
+              title: "Overview",
+              url: "/dashboard/overview",
+            },
+            {
+              title: "Notifications",
+              url: "/dashboard/notifications",
+            },
+          ],
+        },
+        {
+          title: "Organization",
+          url: "#",
+          icon: Building2,
+          isActive:
+            location.pathname.startsWith("/dashboard/organizations") ||
+            location.pathname.startsWith("/dashboard/centers") ||
+            location.pathname === "/dashboard",
+          items: [
+            {
+              title: "Organizations",
+              url: "/dashboard/organizations",
+            },
+            {
+              title: "Centers",
+              url: "/dashboard/centers",
+            },
+          ],
+        },
+        {
+          title: "User Management",
+          url: "#",
+          icon: Users,
+          isActive:
+            location.pathname.startsWith("/dashboard/students") ||
+            location.pathname.startsWith("/dashboard/employees") ||
+            location.pathname.startsWith("/dashboard/roles-permissions"),
+          items: [
+            {
+              title: "Students",
+              url: "/dashboard/students",
+            },
+            {
+              title: "Employees",
+              url: "/dashboard/employees",
+            },
+            {
+              title: "Roles & Permissions",
+              url: "/dashboard/roles-permissions",
+            },
+          ],
+        },
+        {
+          title: "Academic",
+          url: "#",
+          icon: GraduationCap,
+          isActive:
+            location.pathname.startsWith("/dashboard/courses") ||
+            location.pathname.startsWith("/dashboard/cohorts") ||
+            location.pathname.startsWith("/dashboard/classes") ||
+            location.pathname.startsWith("/dashboard/enrollments"),
+          items: [
+            {
+              title: "Courses",
+              url: "/dashboard/courses",
+            },
+            {
+              title: "Cohorts",
+              url: "/dashboard/cohorts",
+            },
+            {
+              title: "Classes",
+              url: "/dashboard/classes",
+            },
+            {
+              title: "Enrollments",
+              url: "/dashboard/enrollments",
+            },
+          ],
+        },
+        {
+          title: "Business",
+          url: "#",
+          icon: PieChart,
+          isActive:
+            location.pathname.startsWith("/dashboard/enquiries") ||
+            location.pathname.startsWith("/dashboard/payments") ||
+            location.pathname.startsWith("/dashboard/feedback"),
+          items: [
+            {
+              title: "Enquiries",
+              url: "/dashboard/enquiries",
+            },
+            {
+              title: "Payments",
+              url: "/dashboard/payments",
+            },
+            {
+              title: "Feedback",
+              url: "/dashboard/feedback",
+            },
+          ],
+        },
+        {
+          title: "System",
+          url: "#",
+          icon: Command,
+          isActive: location.pathname.startsWith("/dashboard/audit-logs"),
+          items: [
+            {
+              title: "Audit Logs",
+              url: "/dashboard/audit-logs",
+            },
+          ],
+        },
+      ],
+    }),
+    [location.pathname]
+  );
 
   // Fetch organizations on component mount
   React.useEffect(() => {
     const fetchOrganizations = async () => {
       try {
         setLoading(true);
-        const response = await organizationService.getOrganizations({ limit: 10 });
-        
+
+        // Debug: Check authentication status before making API call
+        console.log("=== Fetching Organizations ===");
+        apiService.debugAuthStatus();
+
+        const response = await organizationService.getOrganizations({
+          limit: 10,
+        });
+
         if (OrganizationHelpers.isGetOrganizationsSuccess(response)) {
-          const orgsData = OrganizationHelpers.getOrganizationsFromResponse(response);
+          const orgsData =
+            OrganizationHelpers.getOrganizationsFromResponse(response);
           // Transform API data to match expected format
-          const transformedOrgs: Organization[] = orgsData.map((org, index) => ({
-            id: org.id,
-            name: org.name,
-            logo: [GalleryVerticalEnd, AudioWaveform, Building2][index % 3],
-            plan: org.status || 'Active'
-          }));
+          const transformedOrgs: Organization[] = orgsData.map(
+            (org, index) => ({
+              id: org.id,
+              name: org.name,
+              logo: [GalleryVerticalEnd, AudioWaveform, Building2][index % 3],
+              plan: org.status || "Active",
+            })
+          );
           setOrganizations(transformedOrgs);
         } else {
           // Handle API error response
-          console.error('Failed to fetch organizations:', response.message);
+          console.error("Failed to fetch organizations:", response.message);
           setOrganizations([
             {
               id: 1,
@@ -177,7 +212,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ]);
         }
       } catch (error) {
-        console.error('Failed to fetch organizations:', error);
+        console.error("Failed to fetch organizations:", error);
         // Fallback to default organizations if API fails
         setOrganizations([
           {
@@ -194,7 +229,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     fetchOrganizations();
   }, []);
-  
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

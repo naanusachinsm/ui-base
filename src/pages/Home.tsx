@@ -132,7 +132,7 @@ function Header() {
             >
               Sign In
             </Button>
-            <Button onClick={handleLogin} className="cursor-pointer">
+            <Button onClick={handleGetStarted} className="cursor-pointer">
               Get Started
             </Button>
           </div>
@@ -213,7 +213,7 @@ function Header() {
                 >
                   Sign In
                 </Button>
-                <Button onClick={handleLogin} className="cursor-pointer">
+                <Button onClick={handleGetStarted} className="cursor-pointer">
                   Get Started
                 </Button>
               </div>
@@ -407,6 +407,10 @@ export default function Landing() {
   const navigate = useNavigate();
 
   const handleTryNow = () => {
+    navigate("/login");
+  };
+
+  const handleGetStarted = () => {
     navigate("/login");
   };
 

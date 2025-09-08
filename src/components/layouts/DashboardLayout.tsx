@@ -13,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import { useMemo } from "react";
 
 // Navigation data for breadcrumb generation
@@ -66,9 +66,7 @@ const navData = {
     {
       title: "System",
       url: "#",
-      items: [
-        { title: "Audit Logs", url: "/dashboard/audit-logs" },
-      ],
+      items: [{ title: "Audit Logs", url: "/dashboard/audit-logs" }],
     },
   ],
 };
@@ -81,51 +79,54 @@ interface BreadcrumbItem {
 
 export default function DashboardLayout() {
   const location = useLocation();
-  
+
   // Generate dynamic breadcrumbs based on current path
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
     const path = location.pathname;
     const breadcrumbItems: BreadcrumbItem[] = [];
-    
+
     // Always start with Dashboard
     breadcrumbItems.push({ title: "Dashboard", url: "/dashboard" });
-    
-    // If we're on the main dashboard page, return just Dashboard
-    if (path === "/dashboard") {
-      breadcrumbItems[0].isCurrentPage = true;
+
+    // If we're on the main dashboard page or organizations (default), show Organizations
+    if (path === "/dashboard" || path === "/dashboard/organizations") {
+      breadcrumbItems.push({ title: "Organizations", isCurrentPage: true });
       return breadcrumbItems;
     }
-    
+
     // Find the matching navigation item
     for (const section of navData.navMain) {
-      const matchingItem = section.items?.find(item => item.url === path);
+      const matchingItem = section.items?.find((item) => item.url === path);
       if (matchingItem) {
         // Add section as intermediate breadcrumb
         breadcrumbItems.push({ title: section.title });
         // Add current page
-        breadcrumbItems.push({ title: matchingItem.title, isCurrentPage: true });
+        breadcrumbItems.push({
+          title: matchingItem.title,
+          isCurrentPage: true,
+        });
         break;
       }
     }
-    
+
     // If no match found, generate from path segments
     if (breadcrumbItems.length === 1) {
-      const segments = path.split('/').filter(Boolean).slice(1); // Remove 'dashboard'
+      const segments = path.split("/").filter(Boolean).slice(1); // Remove 'dashboard'
       segments.forEach((segment, index) => {
         const title = segment
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
         breadcrumbItems.push({
           title,
-          isCurrentPage: index === segments.length - 1
+          isCurrentPage: index === segments.length - 1,
         });
       });
     }
-    
+
     return breadcrumbItems;
   }, [location.pathname]);
-  
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -157,13 +158,8 @@ export default function DashboardLayout() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+        <div className="flex flex-1 flex-col gap-4 py-4 pt-0">
+          <Outlet />
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -1,6 +1,6 @@
-import type { BaseResponse, ModuleNames, ErrorTypes } from './types';
-import { API_CONFIG } from '@/config/constants';
-import { toast } from 'sonner';
+import type { BaseResponse, ModuleNames, ErrorTypes } from "./types";
+import { API_CONFIG } from "@/config/constants";
+import { toast } from "sonner";
 
 /**
  * Simple and reusable API service for handling HTTP requests
@@ -10,14 +10,17 @@ export class ApiService {
   private defaultHeaders: Record<string, string>;
   private timeout: number;
 
-  constructor(baseURL: string = API_CONFIG.baseUrl, defaultHeaders: Record<string, string> = {}) {
+  constructor(
+    baseURL: string = API_CONFIG.baseUrl,
+    defaultHeaders: Record<string, string> = {}
+  ) {
     this.baseURL = baseURL;
     this.defaultHeaders = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...defaultHeaders,
     };
     this.timeout = API_CONFIG.timeout;
-    
+
     // Automatically load and set access token from localStorage on initialization
     this.initializeAuthToken();
   }
@@ -36,8 +39,8 @@ export class ApiService {
    * Get stored access token from localStorage
    */
   private getStoredToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('accessToken');
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("accessToken");
     }
     return null;
   }
@@ -46,8 +49,8 @@ export class ApiService {
    * Store access token in localStorage
    */
   private storeToken(token: string): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', token);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accessToken", token);
     }
   }
 
@@ -55,9 +58,9 @@ export class ApiService {
    * Remove access token from localStorage
    */
   private removeStoredToken(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
     }
   }
 
@@ -72,15 +75,16 @@ export class ApiService {
    * Set authorization token and store it in localStorage
    */
   setAuthToken(token: string): void {
-    this.defaultHeaders['Authorization'] = `Bearer ${token}`;
+    this.defaultHeaders["Authorization"] = `Bearer ${token}`;
     this.storeToken(token);
+    console.log("API Service: Auth token set in headers and localStorage");
   }
 
   /**
    * Remove authorization token and clear from localStorage
    */
   removeAuthToken(): void {
-    delete this.defaultHeaders['Authorization'];
+    delete this.defaultHeaders["Authorization"];
     this.removeStoredToken();
   }
 
@@ -104,9 +108,9 @@ export class ApiService {
   refreshAuthToken(): void {
     const token = this.getStoredToken();
     if (token) {
-      this.defaultHeaders['Authorization'] = `Bearer ${token}`;
+      this.defaultHeaders["Authorization"] = `Bearer ${token}`;
     } else {
-      delete this.defaultHeaders['Authorization'];
+      delete this.defaultHeaders["Authorization"];
     }
   }
 
@@ -115,6 +119,28 @@ export class ApiService {
    */
   isAuthenticated(): boolean {
     return !!this.getStoredToken();
+  }
+
+  /**
+   * Debug method to check authentication status
+   */
+  debugAuthStatus(): void {
+    const token = this.getStoredToken();
+    const hasAuthHeader = !!this.defaultHeaders["Authorization"];
+    console.log("=== API Service Auth Debug ===");
+    console.log("Stored token exists:", !!token);
+    console.log(
+      "Token preview:",
+      token ? token.substring(0, 20) + "..." : "None"
+    );
+    console.log("Authorization header exists:", hasAuthHeader);
+    console.log(
+      "Authorization header value:",
+      this.defaultHeaders["Authorization"]
+        ? this.defaultHeaders["Authorization"].substring(0, 30) + "..."
+        : "None"
+    );
+    console.log("=============================");
   }
 
   /**
@@ -127,14 +153,25 @@ export class ApiService {
     customHeaders?: Record<string, string>
   ): Promise<BaseResponse<T>> {
     try {
-      const fullUrl = url.startsWith('http') ? url : `${this.baseURL}${url}`;
-      
+      const fullUrl = url.startsWith("http") ? url : `${this.baseURL}${url}`;
+
       // Ensure we have the latest token from localStorage for each request
       const storedToken = this.getStoredToken();
-      if (storedToken && !this.defaultHeaders['Authorization']) {
-        this.defaultHeaders['Authorization'] = `Bearer ${storedToken}`;
+      if (storedToken && !this.defaultHeaders["Authorization"]) {
+        this.defaultHeaders["Authorization"] = `Bearer ${storedToken}`;
       }
-      
+
+      // Debug: Log if we have an auth token for this request
+      if (this.defaultHeaders["Authorization"]) {
+        console.log(
+          "API Request: Authorization header present for",
+          method,
+          url
+        );
+      } else {
+        console.log("API Request: No authorization header for", method, url);
+      }
+
       const requestOptions: RequestInit = {
         method: method.toUpperCase(),
         headers: {
@@ -145,35 +182,36 @@ export class ApiService {
       };
 
       // Add body for POST, PUT, PATCH requests
-      if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase()) && data) {
+      if (["POST", "PUT", "PATCH"].includes(method.toUpperCase()) && data) {
         requestOptions.body = JSON.stringify(data);
       }
 
       const response = await fetch(fullUrl, requestOptions);
-      const responseData = await response.json() as BaseResponse<T>;
+      const responseData = (await response.json()) as BaseResponse<T>;
 
       // Handle error notifications only
       if (!responseData.success) {
         // Show error toast for all failed requests
-        const errorMessage = responseData.message || 'An error occurred';
+        const errorMessage = responseData.message || "An error occurred";
         toast.error(errorMessage);
       }
 
       return responseData;
     } catch (error: unknown) {
       // Show network error toast
-      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : "Network error occurred";
       toast.error(errorMessage);
-      
+
       // Create a basic error response if the request fails
       return {
         success: false,
         statusCode: 500,
         message: errorMessage,
-        module: 'APP' as ModuleNames,
+        module: "APP" as ModuleNames,
         error: {
-          type: 'TECHNICAL_ERROR' as ErrorTypes,
-          code: 'NETWORK_ERROR',
+          type: "TECHNICAL_ERROR" as ErrorTypes,
+          code: "NETWORK_ERROR",
           details: error,
         },
         timestamp: new Date().toISOString(),
@@ -184,7 +222,11 @@ export class ApiService {
   /**
    * GET request
    */
-  async get<T = unknown>(url: string, params?: Record<string, string | number | boolean>, headers?: Record<string, string>): Promise<BaseResponse<T>> {
+  async get<T = unknown>(
+    url: string,
+    params?: Record<string, string | number | boolean>,
+    headers?: Record<string, string>
+  ): Promise<BaseResponse<T>> {
     let finalUrl = url;
     if (params) {
       const stringParams: Record<string, string> = {};
@@ -194,35 +236,50 @@ export class ApiService {
       const searchParams = new URLSearchParams(stringParams);
       finalUrl = `${url}?${searchParams}`;
     }
-    return this.request<T>('GET', finalUrl, undefined, headers);
+    return this.request<T>("GET", finalUrl, undefined, headers);
   }
 
   /**
    * POST request
    */
-  async post<T = unknown>(url: string, data?: unknown, headers?: Record<string, string>): Promise<BaseResponse<T>> {
-    return this.request<T>('POST', url, data, headers);
+  async post<T = unknown>(
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>("POST", url, data, headers);
   }
 
   /**
    * PUT request
    */
-  async put<T = unknown>(url: string, data?: unknown, headers?: Record<string, string>): Promise<BaseResponse<T>> {
-    return this.request<T>('PUT', url, data, headers);
+  async put<T = unknown>(
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>("PUT", url, data, headers);
   }
 
   /**
    * PATCH request
    */
-  async patch<T = unknown>(url: string, data?: unknown, headers?: Record<string, string>): Promise<BaseResponse<T>> {
-    return this.request<T>('PATCH', url, data, headers);
+  async patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>("PATCH", url, data, headers);
   }
 
   /**
    * DELETE request
    */
-  async delete<T = unknown>(url: string, headers?: Record<string, string>): Promise<BaseResponse<T>> {
-    return this.request<T>('DELETE', url, undefined, headers);
+  async delete<T = unknown>(
+    url: string,
+    headers?: Record<string, string>
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>("DELETE", url, undefined, headers);
   }
 }
 
@@ -234,14 +291,21 @@ export const ApiHelpers = {
   /**
    * Check if response is successful
    */
-  isSuccess: <T>(response: BaseResponse<T>): response is BaseResponse<T> & { success: true; data: T } => {
+  isSuccess: <T>(
+    response: BaseResponse<T>
+  ): response is BaseResponse<T> & { success: true; data: T } => {
     return response.success === true;
   },
 
   /**
    * Check if response is an error
    */
-  isError: (response: BaseResponse): response is BaseResponse & { success: false; error: NonNullable<BaseResponse['error']> } => {
+  isError: (
+    response: BaseResponse
+  ): response is BaseResponse & {
+    success: false;
+    error: NonNullable<BaseResponse["error"]>;
+  } => {
     return response.success === false;
   },
 
@@ -255,7 +319,7 @@ export const ApiHelpers = {
   /**
    * Extract error from error response
    */
-  getError: (response: BaseResponse): BaseResponse['error'] | null => {
+  getError: (response: BaseResponse): BaseResponse["error"] | null => {
     return ApiHelpers.isError(response) ? response.error : null;
   },
 };

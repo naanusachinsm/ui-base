@@ -96,11 +96,20 @@ export function LoginForm({
           // Save user data to Zustand store
           setUser(userData);
 
-          // Token is automatically stored by apiService.setAuthToken() in authService.login()
-          // No need to manually store in localStorage here
+          // Manually set the auth token to ensure it's properly stored
+          if (userData.accessToken) {
+            apiService.setAuthToken(userData.accessToken);
+            console.log(
+              "Access token set successfully:",
+              userData.accessToken.substring(0, 20) + "..."
+            );
+
+            // Debug: Check authentication status after setting token
+            apiService.debugAuthStatus();
+          }
 
           toast.success("Login successful! Welcome back.");
-          navigate("/dashboard");
+          navigate("/dashboard/organizations");
         } else {
           console.error("Failed to extract user data from response");
           toast.error("Login failed: Unable to process user data");
