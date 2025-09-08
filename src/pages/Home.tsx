@@ -67,7 +67,7 @@ function Header() {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Mail className="w-5 h-5 text-white" />
             </div>
@@ -80,7 +80,7 @@ function Header() {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-muted-foreground hover:text-primary font-medium transition-colors"
+                className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
               >
                 {item.name}
               </a>
@@ -92,20 +92,33 @@ function Header() {
             {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 cursor-pointer"
+                >
                   <ThemeIcon className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
+                <DropdownMenuItem
+                  onClick={() => setTheme("light")}
+                  className="cursor-pointer"
+                >
                   <Sun className="w-4 h-4 mr-2" />
                   Light
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <DropdownMenuItem
+                  onClick={() => setTheme("dark")}
+                  className="cursor-pointer"
+                >
                   <Moon className="w-4 h-4 mr-2" />
                   Dark
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
+                <DropdownMenuItem
+                  onClick={() => setTheme("system")}
+                  className="cursor-pointer"
+                >
                   <Monitor className="w-4 h-4 mr-2" />
                   System
                 </DropdownMenuItem>
@@ -115,16 +128,18 @@ function Header() {
             <Button
               variant="ghost"
               onClick={handleLogin}
-              className="text-muted-foreground"
+              className="text-muted-foreground cursor-pointer"
             >
               Sign In
             </Button>
-            <Button onClick={handleLogin}>Get Started</Button>
+            <Button onClick={handleLogin} className="cursor-pointer">
+              Get Started
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -148,7 +163,7 @@ function Header() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-muted-foreground hover:text-primary font-medium transition-colors"
+                  className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -158,21 +173,33 @@ function Header() {
                 {/* Mobile Theme Switcher */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="justify-start">
+                    <Button
+                      variant="ghost"
+                      className="justify-start cursor-pointer"
+                    >
                       <ThemeIcon className="w-4 h-4 mr-2" />
                       Theme
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <DropdownMenuItem
+                      onClick={() => setTheme("light")}
+                      className="cursor-pointer"
+                    >
                       <Sun className="w-4 h-4 mr-2" />
                       Light
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <DropdownMenuItem
+                      onClick={() => setTheme("dark")}
+                      className="cursor-pointer"
+                    >
                       <Moon className="w-4 h-4 mr-2" />
                       Dark
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <DropdownMenuItem
+                      onClick={() => setTheme("system")}
+                      className="cursor-pointer"
+                    >
                       <Monitor className="w-4 h-4 mr-2" />
                       System
                     </DropdownMenuItem>
@@ -182,11 +209,13 @@ function Header() {
                 <Button
                   variant="ghost"
                   onClick={handleLogin}
-                  className="text-muted-foreground"
+                  className="text-muted-foreground cursor-pointer"
                 >
                   Sign In
                 </Button>
-                <Button onClick={handleLogin}>Get Started</Button>
+                <Button onClick={handleLogin} className="cursor-pointer">
+                  Get Started
+                </Button>
               </div>
             </nav>
           </motion.div>
@@ -249,28 +278,28 @@ function Footer() {
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
                 aria-label="GitHub"
               >
                 <Github className="w-5 h-5" />
@@ -287,7 +316,7 @@ function Footer() {
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors cursor-pointer"
                     >
                       {link.name}
                     </a>
@@ -304,7 +333,7 @@ function Footer() {
             © 2024 SendTrail. All rights reserved.
           </p>
           <div className="flex items-center space-x-4">
-            <Button onClick={handleLogin} size="sm">
+            <Button onClick={handleLogin} size="sm" className="cursor-pointer">
               Start Free Trial
             </Button>
           </div>
@@ -531,7 +560,7 @@ export default function Landing() {
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4"
               >
                 <ShimmerButton
-                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
+                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl cursor-pointer"
                   onClick={handleTryNow}
                 >
                   Start Your Free Trial
@@ -540,7 +569,7 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-8 py-4 border-border text-foreground hover:bg-accent"
+                  className="text-lg px-8 py-4 border-border text-foreground hover:bg-accent cursor-pointer"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Watch Demo
@@ -777,7 +806,7 @@ export default function Landing() {
                 className="flex justify-center"
               >
                 <ShimmerButton
-                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
+                  className="text-base px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl cursor-pointer"
                   onClick={handleTryNow}
                 >
                   Get Started
@@ -937,7 +966,7 @@ export default function Landing() {
                   </ul>
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     onClick={handleTryNow}
                   >
                     Start Free
@@ -971,7 +1000,10 @@ export default function Landing() {
                     <li>✓ A/B testing</li>
                     <li>✓ Priority support</li>
                   </ul>
-                  <Button className="w-full" onClick={handleTryNow}>
+                  <Button
+                    className="w-full cursor-pointer"
+                    onClick={handleTryNow}
+                  >
                     Start Free Trial
                   </Button>
                 </CardContent>
@@ -1003,7 +1035,7 @@ export default function Landing() {
                   </ul>
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     onClick={handleTryNow}
                   >
                     Start Free Trial
