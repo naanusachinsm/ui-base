@@ -44,7 +44,7 @@ function Header() {
   const { theme, setTheme } = useAppStore();
 
   const handleLogin = () => {
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   const navigation = [
@@ -201,7 +201,7 @@ function Footer() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   const footerLinks = {
@@ -378,7 +378,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   const handleTryNow = () => {
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   const painPoints = [

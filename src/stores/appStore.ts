@@ -1,14 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { User } from "@/api/authService";
 
 export type Theme = "light" | "dark" | "system";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-}
 
 interface AppState {
   // Theme state
