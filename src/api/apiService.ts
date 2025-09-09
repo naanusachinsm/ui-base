@@ -138,8 +138,6 @@ export class ApiService {
         this.defaultHeaders["Authorization"] = `Bearer ${storedToken}`;
       }
 
-      // Debug: Log if we have an auth token for this request
-
       const requestOptions: RequestInit = {
         method: method.toUpperCase(),
         headers: {

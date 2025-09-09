@@ -91,6 +91,8 @@ import {
   EmployeeStatusColors,
 } from "@/api/employeeTypes";
 import { employeeService } from "@/api/employeeService";
+import { roleService } from "@/api/roleService";
+import { ActionType, ModuleName } from "@/api/roleTypes";
 import { toast } from "sonner";
 import EmployeeModal from "./EmployeeModal";
 import { useAppStore } from "@/stores/appStore";
@@ -208,6 +210,8 @@ export default function EmployeesPage() {
     null
   );
 
+  const [moduleActions, setModuleActions] = useState<ActionType[]>([]);
+
   // Get user data from store
   const { user } = useAppStore();
 
@@ -260,6 +264,44 @@ export default function EmployeesPage() {
 
     fetchEmployees();
   }, []); // Only run on mount
+
+  // Fetch module actions when user is available
+  useEffect(() => {
+    const fetchModuleActions = async () => {
+      if (!user?.role) {
+        return;
+      }
+
+      try {
+        const response = await roleService.getRoleActions(
+          user.role,
+          ModuleName.EMPLOYEE
+        );
+
+        if (response.success && response.data) {
+          setModuleActions(response.data.actions || []);
+        } else {
+          setModuleActions([]);
+          if (response.message) {
+            toast.error(`Failed to fetch permissions: ${response.message}`);
+          } else {
+            toast.error(
+              "Failed to fetch module actions - no permissions data received"
+            );
+          }
+        }
+      } catch (error) {
+        setModuleActions([]);
+        toast.error(
+          `Failed to fetch module actions: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    };
+
+    fetchModuleActions();
+  }, [user]); // Run when user changes
 
   // Refresh employees data
   const refreshEmployees = async () => {
@@ -349,6 +391,13 @@ export default function EmployeesPage() {
     setIsDeleteDialogOpen(false);
     setEmployeeToDelete(null);
   };
+
+  // Check if action is available in module actions
+  const canPerformAction = useMemo(() => {
+    return (action: ActionType): boolean => {
+      return moduleActions.includes(action);
+    };
+  }, [moduleActions]);
 
   // Define columns
   const columns: ColumnDef<Employee>[] = useMemo(
@@ -565,27 +614,33 @@ export default function EmployeesPage() {
                     Copy email
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => handleViewEmployee(employee)}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    View details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => handleEditEmployee(employee)}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit employee
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-600 cursor-pointer"
-                    onClick={() => handleDeleteClick(employee)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete employee
-                  </DropdownMenuItem>
+                  {canPerformAction(ActionType.READ) && (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleViewEmployee(employee)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View details
+                    </DropdownMenuItem>
+                  )}
+                  {canPerformAction(ActionType.UPDATE) && (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleEditEmployee(employee)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit employee
+                    </DropdownMenuItem>
+                  )}
+                  {canPerformAction(ActionType.DELETE) && (
+                    <DropdownMenuItem
+                      className="text-red-600 cursor-pointer"
+                      onClick={() => handleDeleteClick(employee)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete employee
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -595,7 +650,7 @@ export default function EmployeesPage() {
         maxSize: 60,
       },
     ],
-    []
+    [canPerformAction]
   );
 
   // Filter employees based on search and filters
@@ -635,8 +690,6 @@ export default function EmployeesPage() {
       rowSelection,
     },
   });
-
-
 
   return (
     <div className="w-full px-4 py-2">
@@ -687,22 +740,25 @@ export default function EmployeesPage() {
               </Select>
             </div>
             <div className="flex items-center space-x-2">
-              {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <Button
-                  variant="outline"
-                  className="cursor-pointer"
-                  onClick={() => {
-                    // TODO: Implement CSV export functionality
-                  }}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
+              {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                canPerformAction(ActionType.EXPORT) && (
+                  <Button
+                    variant="outline"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      // TODO: Implement CSV export functionality
+                    }}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </Button>
+                )}
+              {canPerformAction(ActionType.CREATE) && (
+                <Button className="cursor-pointer" onClick={handleAddEmployee}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add Employee
                 </Button>
               )}
-              <Button className="cursor-pointer" onClick={handleAddEmployee}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Employee
-              </Button>
             </div>
           </div>
           <div className="rounded-md border">

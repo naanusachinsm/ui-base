@@ -42,6 +42,18 @@ export {
   EmployeeHelpers,
 } from "./employeeTypes";
 
+// Role Service (RBAC)
+export { roleService } from "./roleService";
+export type {
+  Role,
+  RoleAction,
+  Permission,
+  CreateRoleRequest,
+  UpdateRoleRequest,
+  GetRolesParams,
+  ModuleActionsResponse,
+} from "./roleTypes";
+
 // Types and Interfaces
 export * from "./types";
 
