@@ -16,7 +16,7 @@ import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import { useAppStore } from "@/stores/appStore";
-import { organizationService, OrganizationHelpers, apiService } from "@/api";
+import { organizationService, OrganizationHelpers } from "@/api";
 import { useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -179,8 +179,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         setLoading(true);
 
         // Debug: Check authentication status before making API call
-        console.log("=== Fetching Organizations ===");
-        apiService.debugAuthStatus();
 
         const response = await organizationService.getOrganizations({
           limit: 10,

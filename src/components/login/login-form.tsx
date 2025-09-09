@@ -99,13 +99,7 @@ export function LoginForm({
           // Manually set the auth token to ensure it's properly stored
           if (userData.accessToken) {
             apiService.setAuthToken(userData.accessToken);
-            console.log(
-              "Access token set successfully:",
-              userData.accessToken.substring(0, 20) + "..."
-            );
 
-            // Debug: Check authentication status after setting token
-            apiService.debugAuthStatus();
           }
 
           toast.success("Login successful! Welcome back.");

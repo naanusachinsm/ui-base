@@ -156,14 +156,8 @@ export default function EmployeeModal({
   }, [isOpen, employee, form, userCenterId]);
 
   const onSubmit = async (data: EmployeeFormData) => {
-    console.log("=== onSubmit function called ===");
-    console.log("Received data:", data);
-    console.log("isEditing:", isEditing);
-    console.log("employee:", employee);
-
     try {
       setIsSubmitting(true);
-      console.log("Form submission started:", { isEditing, data });
 
       // Clean up empty strings and convert to proper types
       const cleanData = {
@@ -185,21 +179,14 @@ export default function EmployeeModal({
           userCenterId || (data.centerId ? parseInt(data.centerId) : undefined),
       };
 
-      console.log("Clean data prepared:", cleanData);
-
       if (isEditing && employee) {
         // Update existing employee
         const updateData: UpdateEmployeeRequest = cleanData;
-        console.log("Updating employee:", {
-          employeeId: employee.id,
-          updateData,
-        });
 
         const response = await employeeService.updateEmployee(
           employee.id,
           updateData
         );
-        console.log("Update response:", response);
 
         if (response.success) {
           toast.success("Employee updated successfully");
@@ -216,9 +203,7 @@ export default function EmployeeModal({
           password: null, // Null password - backend will handle password creation
         };
 
-        console.log("Creating employee:", createData);
         const response = await employeeService.createEmployee(createData);
-        console.log("Create response:", response);
 
         if (response.success) {
           toast.success("Employee created successfully");
@@ -240,7 +225,6 @@ export default function EmployeeModal({
       toast.error("An error occurred while saving the employee");
       // Modal stays open on error
     } finally {
-      console.log("Setting isSubmitting to false");
       setIsSubmitting(false);
     }
   };
@@ -272,16 +256,7 @@ export default function EmployeeModal({
 
         <Form {...form}>
           <form
-            onSubmit={(e) => {
-              console.log("=== Form onSubmit triggered ===");
-              console.log("Event:", e);
-              console.log("Form state before submit:", {
-                isValid: form.formState.isValid,
-                errors: form.formState.errors,
-                values: form.getValues(),
-              });
-              form.handleSubmit(onSubmit)(e);
-            }}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4"
           >
             {/* Basic Information */}
@@ -608,21 +583,7 @@ export default function EmployeeModal({
                   type="submit"
                   disabled={isSubmitting}
                   className="cursor-pointer"
-                  onClick={(e) => {
-                    console.log("=== Submit button clicked ===");
-                    console.log("Event:", e);
-                    console.log("Form state:", {
-                      isValid: form.formState.isValid,
-                      errors: form.formState.errors,
-                      isSubmitting: form.formState.isSubmitting,
-                      isEditing,
-                      isReadOnly,
-                      values: form.getValues(),
-                    });
-                    console.log("Form ready for submission");
-
-                    // Test: Try to submit manually
-                    console.log("Attempting manual form submission...");
+                  onClick={() => {
                     form.handleSubmit(onSubmit)();
                   }}
                 >

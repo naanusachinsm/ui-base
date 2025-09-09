@@ -77,7 +77,6 @@ export class ApiService {
   setAuthToken(token: string): void {
     this.defaultHeaders["Authorization"] = `Bearer ${token}`;
     this.storeToken(token);
-    console.log("API Service: Auth token set in headers and localStorage");
   }
 
   /**
@@ -122,28 +121,6 @@ export class ApiService {
   }
 
   /**
-   * Debug method to check authentication status
-   */
-  debugAuthStatus(): void {
-    const token = this.getStoredToken();
-    const hasAuthHeader = !!this.defaultHeaders["Authorization"];
-    console.log("=== API Service Auth Debug ===");
-    console.log("Stored token exists:", !!token);
-    console.log(
-      "Token preview:",
-      token ? token.substring(0, 20) + "..." : "None"
-    );
-    console.log("Authorization header exists:", hasAuthHeader);
-    console.log(
-      "Authorization header value:",
-      this.defaultHeaders["Authorization"]
-        ? this.defaultHeaders["Authorization"].substring(0, 30) + "..."
-        : "None"
-    );
-    console.log("=============================");
-  }
-
-  /**
    * Generic request method
    */
   private async request<T = unknown>(
@@ -162,15 +139,6 @@ export class ApiService {
       }
 
       // Debug: Log if we have an auth token for this request
-      if (this.defaultHeaders["Authorization"]) {
-        console.log(
-          "API Request: Authorization header present for",
-          method,
-          url
-        );
-      } else {
-        console.log("API Request: No authorization header for", method, url);
-      }
 
       const requestOptions: RequestInit = {
         method: method.toUpperCase(),

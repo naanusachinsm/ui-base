@@ -242,16 +242,6 @@ export default function EmployeesPage() {
           limit: 100,
         });
 
-        console.log("API Response:", response);
-        console.log("Response structure:", {
-          success: response.success,
-          data: response.data,
-          employees: response.data?.data,
-          dataType: typeof response.data,
-          employeesType: typeof response.data?.data,
-          isArray: Array.isArray(response.data?.data),
-        });
-
         if (response.success && response.data) {
           toast.success("Employees loaded successfully");
           setEmployees(response.data.data);
@@ -610,14 +600,9 @@ export default function EmployeesPage() {
 
   // Filter employees based on search and filters
   const filteredEmployees = useMemo(() => {
-    console.log("Current employees state:", employees);
-
     if (!employees || !Array.isArray(employees)) {
-      console.log("Employees is not an array, returning empty array");
       return [];
     }
-
-    console.log("Filtering employees:", employees.length, "items");
 
     return employees.filter((employee) => {
       const matchesSearch =
@@ -627,19 +612,6 @@ export default function EmployeesPage() {
       const matchesStatus =
         statusFilter === "all" || employee.status === statusFilter;
       const matchesRole = roleFilter === "all" || employee.role === roleFilter;
-
-      console.log("Filtering employee:", {
-        name: employee.name,
-        status: employee.status,
-        role: employee.role,
-        searchTerm,
-        statusFilter,
-        roleFilter,
-        matchesSearch,
-        matchesStatus,
-        matchesRole,
-        finalMatch: matchesSearch && matchesStatus && matchesRole,
-      });
 
       return matchesSearch && matchesStatus && matchesRole;
     });
@@ -664,9 +636,7 @@ export default function EmployeesPage() {
     },
   });
 
-  // Debug table data
-  console.log("Table rows:", table.getRowModel().rows);
-  console.log("Filtered employees count:", filteredEmployees.length);
+
 
   return (
     <div className="w-full px-4 py-2">
@@ -723,7 +693,6 @@ export default function EmployeesPage() {
                   className="cursor-pointer"
                   onClick={() => {
                     // TODO: Implement CSV export functionality
-                    console.log("Export clicked");
                   }}
                 >
                   <Download className="mr-2 h-4 w-4" />

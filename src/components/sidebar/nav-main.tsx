@@ -67,7 +67,7 @@ export function NavMain({
                           isActive={isSubItemActive}
                           className={
                             isSubItemActive
-                              ? "bg-primary text-primary-foreground font-medium h-8"
+                              ? "bg-slate-800 text-white font-medium h-8 dark:bg-slate-700"
                               : ""
                           }
                         >
