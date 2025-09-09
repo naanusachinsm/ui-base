@@ -4,6 +4,7 @@ import Home from "@/pages/Home";
 import { LoginPage } from "@/pages/login";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { OrganizationsPage } from "@/pages/organization";
+import { EmployeesPage } from "@/pages/employee";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -17,6 +18,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<OrganizationsPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
+            <Route path="employees" element={<EmployeesPage />} />
           </Route>
         </Routes>
       </Suspense>

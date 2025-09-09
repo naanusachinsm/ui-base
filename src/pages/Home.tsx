@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,10 @@ function Header() {
   const { theme, setTheme } = useAppStore();
 
   const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleGetStarted = () => {
     navigate("/login");
   };
 
