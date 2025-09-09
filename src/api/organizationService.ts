@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { apiService, ApiHelpers } from "./apiService";
+import { apiService } from "./apiService";
 import type { BaseResponse, PaginatedData } from "./types";
 
 // Organization types
-export type OrganizationType = 'UNIVERSITY' | 'CORPORATE' | 'TRAINING' | 'NON_PROFIT' | 'OTHER';
-export type OrganizationStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-export type Currency = 'INR' | 'USD' | 'EUR' | 'GBP' | 'AUD';
+export type OrganizationType =
+  | "UNIVERSITY"
+  | "CORPORATE"
+  | "TRAINING"
+  | "NON_PROFIT"
+  | "OTHER";
+export type OrganizationStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export type Currency = "INR" | "USD" | "EUR" | "GBP" | "AUD";
 
 export interface BillingContact {
   name?: string;
@@ -25,26 +30,26 @@ export interface Organization {
   code: string;
   type: OrganizationType;
   status: OrganizationStatus;
-  
+
   // Contact Information
   contactEmail: string;
   contactPhone?: string;
   website?: string;
   address?: string;
-  
+
   // Branding
   logoUrl?: string;
   establishedDate?: string;
-  
+
   // Configuration
   currency: Currency;
   timezone: string;
   adminEmployeeId?: number;
-  
+
   // Extended Data
   billingContact?: BillingContact;
   settings?: OrganizationSettings;
-  
+
   // Audit Trail
   createdAt: string;
   updatedAt: string;
@@ -60,22 +65,22 @@ export interface CreateOrganizationRequest {
   code: string;
   type: OrganizationType;
   status?: OrganizationStatus; // defaults to ACTIVE
-  
+
   // Contact Information (required)
   contactEmail: string;
   contactPhone?: string;
   website?: string;
   address?: string;
-  
+
   // Branding
   logoUrl?: string;
   establishedDate?: string;
-  
+
   // Configuration
   currency?: Currency; // defaults to INR
   timezone?: string; // defaults to UTC
   adminEmployeeId?: number;
-  
+
   // Extended Data
   billingContact?: BillingContact;
   settings?: OrganizationSettings;
@@ -87,22 +92,22 @@ export interface UpdateOrganizationRequest {
   code?: string;
   type?: OrganizationType;
   status?: OrganizationStatus;
-  
+
   // Contact Information
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
   address?: string;
-  
+
   // Branding
   logoUrl?: string;
   establishedDate?: string;
-  
+
   // Configuration
   currency?: Currency;
   timezone?: string;
   adminEmployeeId?: number;
-  
+
   // Extended Data
   billingContact?: BillingContact;
   settings?: OrganizationSettings;
@@ -122,7 +127,7 @@ export class OrganizationService {
     page?: number;
     limit?: number;
     searchTerm?: string;
-    sortOrder?: 'ASC' | 'DESC';
+    sortOrder?: "ASC" | "DESC";
   }): Promise<BaseResponse<PaginatedData<Organization>>> {
     return await apiService.get<PaginatedData<Organization>>(
       this.basePath,
@@ -166,7 +171,9 @@ export class OrganizationService {
   /**
    * Get organizations for dropdown/selector (simplified data)
    */
-  async getOrganizationsForSelector(): Promise<BaseResponse<Array<{ id: number; name: string }>>> {
+  async getOrganizationsForSelector(): Promise<
+    BaseResponse<Array<{ id: number; name: string }>>
+  > {
     return await apiService.get<Array<{ id: number; name: string }>>(
       `${this.basePath}/selector`
     );
@@ -184,7 +191,7 @@ export const OrganizationHelpers = {
   isGetOrganizationsSuccess: (
     response: BaseResponse<PaginatedData<Organization>>
   ): boolean => {
-    return ApiHelpers.isSuccess(response) && !!response.data?.data;
+    return response.success === true && !!response.data?.data;
   },
 
   /**
@@ -193,7 +200,7 @@ export const OrganizationHelpers = {
   getOrganizationsFromResponse: (
     response: BaseResponse<PaginatedData<Organization>>
   ): Organization[] => {
-    if (ApiHelpers.isSuccess(response) && response.data?.data) {
+    if (response.success === true && response.data?.data) {
       return response.data.data;
     }
     return [];
@@ -202,10 +209,8 @@ export const OrganizationHelpers = {
   /**
    * Check if single organization fetch was successful
    */
-  isGetOrganizationSuccess: (
-    response: BaseResponse<Organization>
-  ): boolean => {
-    return ApiHelpers.isSuccess(response) && !!response.data;
+  isGetOrganizationSuccess: (response: BaseResponse<Organization>): boolean => {
+    return response.success === true && !!response.data;
   },
 
   /**
@@ -214,7 +219,7 @@ export const OrganizationHelpers = {
   getOrganizationFromResponse: (
     response: BaseResponse<Organization>
   ): Organization | null => {
-    return ApiHelpers.getData(response);
+    return response.data ?? null;
   },
 
   /**
@@ -227,7 +232,7 @@ export const OrganizationHelpers = {
       id: org.id,
       name: org.name,
       logo: null, // Will be set by the component
-      plan: org.status || 'Active'
+      plan: org.status || "Active",
     }));
-  }
+  },
 };

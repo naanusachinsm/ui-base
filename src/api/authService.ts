@@ -1,4 +1,4 @@
-import { apiService, ApiHelpers } from "./apiService";
+import { apiService } from "./apiService";
 import type { BaseResponse } from "./types";
 
 // API Configuration
@@ -60,10 +60,7 @@ export class AuthService {
     );
 
     // If login is successful, store the auth token
-    if (
-      ApiHelpers.isSuccess(response) &&
-      response.data?.access_token?.accessToken
-    ) {
+    if (response.success === true && response.data?.access_token?.accessToken) {
       apiService.setAuthToken(response.data.access_token.accessToken);
     }
 
@@ -99,7 +96,7 @@ export class AuthService {
     );
 
     // If refresh is successful, update the auth token
-    if (ApiHelpers.isSuccess(response) && response.data?.token) {
+    if (response.success === true && response.data?.token) {
       apiService.setAuthToken(response.data.token);
     }
 
@@ -130,7 +127,7 @@ export const AuthHelpers = {
    * Extract user data from login response
    */
   getUserFromResponse: (response: BaseResponse<LoginResponse>): User | null => {
-    if (ApiHelpers.isSuccess(response) && response.data?.employee) {
+    if (response.success === true && response.data?.employee) {
       const { employee, access_token, userType } = response.data;
       return {
         id: employee.id,
@@ -153,10 +150,7 @@ export const AuthHelpers = {
   getTokenFromResponse: (
     response: BaseResponse<LoginResponse>
   ): string | null => {
-    if (
-      ApiHelpers.isSuccess(response) &&
-      response.data?.access_token?.accessToken
-    ) {
+    if (response.success === true && response.data?.access_token?.accessToken) {
       return response.data.access_token.accessToken;
     }
     return null;
@@ -167,8 +161,7 @@ export const AuthHelpers = {
    */
   isLoginSuccess: (response: BaseResponse<LoginResponse>): boolean => {
     return (
-      ApiHelpers.isSuccess(response) &&
-      !!response.data?.access_token?.accessToken
+      response.success === true && !!response.data?.access_token?.accessToken
     );
   },
 };
