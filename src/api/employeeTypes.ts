@@ -7,7 +7,7 @@ export const EmployeeRole = {
   SUPERADMIN: "SUPERADMIN",
 } as const;
 
-export type EmployeeRole = typeof EmployeeRole[keyof typeof EmployeeRole];
+export type EmployeeRole = (typeof EmployeeRole)[keyof typeof EmployeeRole];
 
 export const EmployeeStatus = {
   ACTIVE: "ACTIVE",
@@ -15,7 +15,8 @@ export const EmployeeStatus = {
   SUSPENDED: "SUSPENDED",
 } as const;
 
-export type EmployeeStatus = typeof EmployeeStatus[keyof typeof EmployeeStatus];
+export type EmployeeStatus =
+  (typeof EmployeeStatus)[keyof typeof EmployeeStatus];
 
 export interface Employee {
   id: number;
@@ -45,7 +46,7 @@ export interface Employee {
 
 export interface CreateEmployeeRequest {
   email: string;
-  password: string;
+  password: string | null;
   name: string;
   phone?: string;
   role: EmployeeRole;

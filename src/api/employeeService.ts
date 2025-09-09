@@ -55,7 +55,10 @@ class EmployeeService {
     id: number,
     data: UpdateEmployeeRequest
   ): Promise<BaseResponse<Employee>> {
-    return apiService.put(`${this.baseUrl}/${id}`, data);
+    console.log("EmployeeService.updateEmployee called with:", { id, data });
+    const url = `${this.baseUrl}/${id}`;
+    console.log("Making PATCH request to:", url);
+    return apiService.patch(url, data);
   }
 
   /**

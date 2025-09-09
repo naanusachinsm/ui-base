@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -43,6 +42,7 @@ import {
   UserPlus,
   Download,
   GripVertical,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -72,6 +72,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Employee } from "@/api/employeeTypes";
 import {
   EmployeeRole,
@@ -82,6 +92,8 @@ import {
 } from "@/api/employeeTypes";
 import { employeeService } from "@/api/employeeService";
 import { toast } from "sonner";
+import EmployeeModal from "./EmployeeModal";
+import { useAppStore } from "@/stores/appStore";
 
 // Drag handle component
 const DragHandle = () => (
@@ -182,10 +194,22 @@ export default function EmployeesPage() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
+  const [isViewMode, setIsViewMode] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
+    null
+  );
+
+  // Get user data from store
+  const { user } = useAppStore();
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -247,6 +271,95 @@ export default function EmployeesPage() {
     fetchEmployees();
   }, []); // Only run on mount
 
+  // Refresh employees data
+  const refreshEmployees = async () => {
+    try {
+      setLoading(true);
+      const response = await employeeService.getEmployees({
+        limit: 100,
+      });
+
+      if (response.success && response.data) {
+        setEmployees(response.data.data);
+      } else {
+        setEmployees([]);
+      }
+    } catch (error) {
+      console.error("Error refreshing employees:", error);
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle opening modal for adding new employee
+  const handleAddEmployee = () => {
+    setSelectedEmployee(null);
+    setIsModalOpen(true);
+  };
+
+  // Handle opening modal for editing employee
+  const handleEditEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsViewMode(false);
+    setIsModalOpen(true);
+  };
+
+  // Handle opening modal for viewing employee details
+  const handleViewEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsViewMode(true);
+    setIsModalOpen(true);
+  };
+
+  // Handle closing modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEmployee(null);
+    setIsViewMode(false);
+  };
+
+  // Handle successful form submission
+  const handleModalSuccess = () => {
+    refreshEmployees();
+  };
+
+  // Handle delete confirmation
+  const handleDeleteClick = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle confirmed delete
+  const handleConfirmDelete = async () => {
+    if (!employeeToDelete) return;
+
+    try {
+      const response = await employeeService.deleteEmployee(
+        employeeToDelete.id
+      );
+
+      if (response.success) {
+        toast.success("Employee deleted successfully");
+        refreshEmployees();
+      } else {
+        toast.error("Failed to delete employee");
+      }
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+      toast.error("Failed to delete employee");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setEmployeeToDelete(null);
+    }
+  };
+
+  // Handle cancel delete
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setEmployeeToDelete(null);
+  };
+
   // Define columns
   const columns: ColumnDef<Employee>[] = useMemo(
     () => [
@@ -292,7 +405,8 @@ export default function EmployeesPage() {
         maxSize: 50,
       },
       {
-        accessorKey: "name",
+        id: "avatar",
+        accessorFn: (row) => row.name,
         header: "Avatar",
         cell: ({ row }) => {
           const name = row.getValue("name") as string;
@@ -326,7 +440,7 @@ export default function EmployeesPage() {
               className="cursor-pointer"
             >
               Name
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-2 w-2" />
             </Button>
           );
         },
@@ -355,7 +469,7 @@ export default function EmployeesPage() {
               className="cursor-pointer"
             >
               Role
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-2 w-2" />
             </Button>
           );
         },
@@ -379,7 +493,7 @@ export default function EmployeesPage() {
               className="cursor-pointer"
             >
               Status
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-2 w-2" />
             </Button>
           );
         },
@@ -414,7 +528,7 @@ export default function EmployeesPage() {
               className="cursor-pointer"
             >
               Created
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-2 w-2" />
             </Button>
           );
         },
@@ -446,23 +560,39 @@ export default function EmployeesPage() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem
-                    onClick={() =>
-                      navigator.clipboard.writeText(employee.email)
-                    }
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(employee.email);
+                        toast.success("Email copied to clipboard");
+                      } catch (error) {
+                        console.error("Failed to copy email:", error);
+                        toast.error("Failed to copy email");
+                      }
+                    }}
                     className="cursor-pointer"
                   >
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy email
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleViewEmployee(employee)}
+                  >
                     <Eye className="mr-2 h-4 w-4" />
                     View details
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleEditEmployee(employee)}
+                  >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit employee
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600 cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-red-600 cursor-pointer"
+                    onClick={() => handleDeleteClick(employee)}
+                  >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete employee
                   </DropdownMenuItem>
@@ -600,7 +730,7 @@ export default function EmployeesPage() {
                   Export
                 </Button>
               )}
-              <Button className="cursor-pointer">
+              <Button className="cursor-pointer" onClick={handleAddEmployee}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Employee
               </Button>
@@ -687,6 +817,47 @@ export default function EmployeesPage() {
           </div>
         </div>
       </div>
+
+      {/* Employee Modal */}
+      <EmployeeModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        employee={selectedEmployee}
+        onSuccess={handleModalSuccess}
+        isReadOnly={isViewMode}
+        userCenterId={user?.centerId}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              employee <strong>{employeeToDelete?.name}</strong> and remove all
+              associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={handleCancelDelete}
+              className="cursor-pointer"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 cursor-pointer"
+            >
+              Delete Employee
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
