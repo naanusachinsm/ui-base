@@ -83,6 +83,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 import type { Student } from "@/api/studentTypes";
 import {
   StudentStatus,
@@ -163,9 +172,7 @@ const TableCellViewer = ({ value, type }: { value: unknown; type: string }) => {
       return <span className="font-mono text-sm">{value as string}</span>;
     case "email":
       return (
-        <span className="text-sm text-muted-foreground">
-          {value as string}
-        </span>
+        <span className="text-sm text-muted-foreground">{value as string}</span>
       );
     case "status": {
       const status = value as StudentStatus;
@@ -196,6 +203,12 @@ export default function StudentsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+
   const [moduleActions, setModuleActions] = useState<ActionType[]>([]);
 
   // Get user data from store
@@ -223,32 +236,56 @@ export default function StudentsPage() {
     }
   };
 
-  // Fetch students data on component mount
+  // Fetch students data on component mount and when pagination/filters change
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchStudents = async () => {
       try {
         setLoading(true);
         const response = await studentService.getStudents({
-          limit: 100,
+          page: currentPage,
+          limit: pageSize,
+          search: searchTerm || undefined,
+          status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+          centerId: user?.centerId,
         });
 
-        if (response.success && response.data) {
-          setStudents(response.data.data);
-        } else {
-          setStudents([]);
+        // Only update state if component is still mounted
+        if (!isCancelled) {
+          if (response.success && response.data) {
+            setStudents(response.data.data);
+            setTotalPages(response.data.totalPages);
+            setTotalItems(response.data.total);
+          } else {
+            setStudents([]);
+            setTotalPages(0);
+            setTotalItems(0);
+          }
         }
       } catch (error) {
         console.error("Error fetching students:", error);
-        // Fallback to empty data on error
-        setStudents([]);
-        toast.error("Error loading students");
+        // Only show error if component is still mounted
+        if (!isCancelled) {
+          setStudents([]);
+          setTotalPages(0);
+          setTotalItems(0);
+          toast.error("Error loading students");
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchStudents();
-  }, []); // Only run on mount
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentPage, pageSize, searchTerm, statusFilter, user?.centerId]); // Run when pagination or filters change
 
   // Fetch module actions when user is available
   useEffect(() => {
@@ -293,17 +330,27 @@ export default function StudentsPage() {
     try {
       setLoading(true);
       const response = await studentService.getStudents({
-        limit: 100,
+        page: currentPage,
+        limit: pageSize,
+        search: searchTerm || undefined,
+        status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+        centerId: user?.centerId,
       });
 
       if (response.success && response.data) {
         setStudents(response.data.data);
+        setTotalPages(response.data.totalPages);
+        setTotalItems(response.data.total);
       } else {
         setStudents([]);
+        setTotalPages(0);
+        setTotalItems(0);
       }
     } catch (error) {
       console.error("Error refreshing students:", error);
       setStudents([]);
+      setTotalPages(0);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
@@ -381,17 +428,30 @@ export default function StudentsPage() {
     };
   }, [moduleActions]);
 
-  // Filter students based on search term and status
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
-      const matchesSearch = student.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "all" || student.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [students, searchTerm, statusFilter]);
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: string) => {
+    setPageSize(Number(newPageSize));
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Handle search with debouncing
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle status filter change
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  // Use students directly since filtering is now server-side
+  const filteredStudents = students;
 
   // Table columns definition
   const columns: ColumnDef<Student>[] = useMemo(
@@ -652,21 +712,20 @@ export default function StudentsPage() {
             <Input
               placeholder="Search students..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               className="max-w-sm cursor-pointer"
             />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={handleStatusFilterChange}
+            >
               <SelectTrigger className="w-[180px] cursor-pointer">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value={StudentStatus.ACTIVE}>
-                  Active
-                </SelectItem>
-                <SelectItem value={StudentStatus.INACTIVE}>
-                  Inactive
-                </SelectItem>
+                <SelectItem value={StudentStatus.ACTIVE}>Active</SelectItem>
+                <SelectItem value={StudentStatus.INACTIVE}>Inactive</SelectItem>
                 <SelectItem value={StudentStatus.SUSPENDED}>
                   Suspended
                 </SelectItem>
@@ -748,30 +807,90 @@ export default function StudentsPage() {
             </Table>
           </DndContext>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+        {/* Pagination */}
+        <div className="flex items-center justify-between py-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, totalItems)} of {totalItems}{" "}
+            students
           </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="cursor-pointer"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="cursor-pointer"
-            >
-              Next
-            </Button>
+          <div className="flex items-center space-x-4">
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
+                    />
+                  </PaginationItem>
+
+                  {/* Show page numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(pageNum)}
+                          isActive={currentPage === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">Show:</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={handlePageSizeChange}
+              >
+                <SelectTrigger className="w-[80px] cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
