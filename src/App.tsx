@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { OrganizationsPage } from "@/pages/organization";
 import { EmployeesPage } from "@/pages/employee";
 import { StudentsPage } from "@/pages/student";
+import { CentersPage } from "@/pages/center";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -19,6 +20,7 @@ function App() {
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<OrganizationsPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
+            <Route path="centers" element={<CentersPage />} />
             <Route path="employees" element={<EmployeesPage />} />
             <Route path="students" element={<StudentsPage />} />
           </Route>

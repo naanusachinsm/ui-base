@@ -42,6 +42,21 @@ export {
   EmployeeHelpers,
 } from "./employeeTypes";
 
+// Center Service
+export { centerService } from "./centerService";
+export type {
+  Center,
+  CreateCenterRequest,
+  UpdateCenterRequest,
+  GetCentersParams,
+  GetCentersResponse,
+  CenterStatus,
+} from "./centerTypes";
+export {
+  CenterStatusLabels,
+  CenterStatusColors,
+} from "./centerTypes";
+
 // Role Service (RBAC)
 export { roleService } from "./roleService";
 export type {

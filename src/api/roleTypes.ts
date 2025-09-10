@@ -53,6 +53,7 @@ export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
 // Module names as const assertions for all possible modules
 export const ModuleName = {
+  CENTER: "CENTERS",
   EMPLOYEE: "EMPLOYEES",
   STUDENT: "STUDENTS",
   ROLE: "ROLES",
