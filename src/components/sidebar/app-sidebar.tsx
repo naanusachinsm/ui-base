@@ -87,8 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           icon: Users,
           isActive:
             location.pathname.startsWith("/dashboard/students") ||
-            location.pathname.startsWith("/dashboard/employees") ||
-            location.pathname.startsWith("/dashboard/roles-permissions"),
+            location.pathname.startsWith("/dashboard/employees"),
           items: [
             {
               title: "Students",
@@ -97,10 +96,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {
               title: "Employees",
               url: "/dashboard/employees",
-            },
-            {
-              title: "Roles & Permissions",
-              url: "/dashboard/roles-permissions",
             },
           ],
         },

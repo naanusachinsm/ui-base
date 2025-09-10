@@ -41,7 +41,6 @@ const navData = {
       items: [
         { title: "Students", url: "/dashboard/students" },
         { title: "Employees", url: "/dashboard/employees" },
-        { title: "Roles & Permissions", url: "/dashboard/roles-permissions" },
       ],
     },
     {
