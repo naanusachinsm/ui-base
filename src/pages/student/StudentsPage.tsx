@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -82,19 +83,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { Employee } from "@/api/employeeTypes";
+import type { Student } from "@/api/studentTypes";
 import {
-  EmployeeRole,
-  EmployeeStatus,
-  EmployeeRoleLabels,
-  EmployeeStatusLabels,
-  EmployeeStatusColors,
-} from "@/api/employeeTypes";
-import { employeeService } from "@/api/employeeService";
+  StudentStatus,
+  StudentStatusLabels,
+  StudentStatusColors,
+} from "@/api/studentTypes";
+import { studentService } from "@/api/studentService";
 import { roleService } from "@/api/roleService";
 import { ActionType, ModuleName } from "@/api/roleTypes";
 import { toast } from "sonner";
-import EmployeeModal from "./EmployeeModal";
+import StudentModal from "./StudentModal";
 import { useAppStore } from "@/stores/appStore";
 
 // Drag handle component
@@ -105,7 +104,7 @@ const DragHandle = () => (
 );
 
 // Sortable table row component
-const SortableTableRow = ({ row }: { row: Row<Employee> }) => {
+const SortableTableRow = ({ row }: { row: Row<Student> }) => {
   const {
     attributes,
     listeners,
@@ -118,6 +117,7 @@ const SortableTableRow = ({ row }: { row: Row<Employee> }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
@@ -125,7 +125,7 @@ const SortableTableRow = ({ row }: { row: Row<Employee> }) => {
       ref={setNodeRef}
       style={style}
       data-state={row.getIsSelected() && "selected"}
-      className={`hover:bg-muted/50 ${isDragging ? "opacity-50" : ""}`}
+      className={isDragging ? "bg-muted/50" : ""}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell
@@ -135,7 +135,7 @@ const SortableTableRow = ({ row }: { row: Row<Employee> }) => {
         >
           {cell.column.id === "drag" ? (
             <div {...attributes} {...listeners}>
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              <DragHandle />
             </div>
           ) : (
             flexRender(cell.column.columnDef.cell, cell.getContext())
@@ -148,67 +148,53 @@ const SortableTableRow = ({ row }: { row: Row<Employee> }) => {
 
 // Table cell viewer component
 const TableCellViewer = ({ value, type }: { value: unknown; type: string }) => {
+  if (value === null || value === undefined) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+
   switch (type) {
-    case "avatar":
+    case "date":
       return (
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={value as string} alt="Employee" />
-          <AvatarFallback>EM</AvatarFallback>
-        </Avatar>
+        <span className="text-sm">
+          {new Date(value as string).toLocaleDateString()}
+        </span>
       );
-    case "status":
-      return (
-        <Badge className={EmployeeStatusColors[value as EmployeeStatus]}>
-          {EmployeeStatusLabels[value as EmployeeStatus]}
-        </Badge>
-      );
-    case "role":
-      return (
-        <Badge variant="outline">
-          {EmployeeRoleLabels[value as EmployeeRole]}
-        </Badge>
-      );
-    case "salary":
-      return value ? `$${(value as number).toLocaleString()}` : "N/A";
     case "phone":
-      return (value as string) || "N/A";
-    case "location": {
-      const locationValue = value as {
-        city?: string;
-        state?: string;
-        country?: string;
-      };
-      const parts = [
-        locationValue.city,
-        locationValue.state,
-        locationValue.country,
-      ].filter(Boolean);
-      return parts.length > 0 ? parts.join(", ") : "N/A";
+      return <span className="font-mono text-sm">{value as string}</span>;
+    case "email":
+      return (
+        <span className="text-sm text-muted-foreground">
+          {value as string}
+        </span>
+      );
+    case "status": {
+      const status = value as StudentStatus;
+      return (
+        <Badge variant="outline" className={StudentStatusColors[status]}>
+          {StudentStatusLabels[status]}
+        </Badge>
+      );
     }
+    case "text":
     default:
-      return (value as string) || "N/A";
+      return <span className="text-sm">{value as string}</span>;
   }
 };
 
-export default function EmployeesPage() {
+export default function StudentsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null
-  );
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
-    null
-  );
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   const [moduleActions, setModuleActions] = useState<ActionType[]>([]);
 
@@ -228,7 +214,7 @@ export default function EmployeesPage() {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      setEmployees((items) => {
+      setStudents((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over?.id);
 
@@ -237,31 +223,31 @@ export default function EmployeesPage() {
     }
   };
 
-  // Fetch employees data on component mount
+  // Fetch students data on component mount
   useEffect(() => {
-    const fetchEmployees = async () => {
+    const fetchStudents = async () => {
       try {
         setLoading(true);
-        const response = await employeeService.getEmployees({
+        const response = await studentService.getStudents({
           limit: 100,
         });
 
         if (response.success && response.data) {
-          setEmployees(response.data.data);
+          setStudents(response.data.data);
         } else {
-          setEmployees([]);
+          setStudents([]);
         }
       } catch (error) {
-        console.error("Error fetching employees:", error);
-        // Fallback to sample data on error
-        setEmployees([]);
-        toast.error("Error loading employees, using sample data");
+        console.error("Error fetching students:", error);
+        // Fallback to empty data on error
+        setStudents([]);
+        toast.error("Error loading students");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEmployees();
+    fetchStudents();
   }, []); // Only run on mount
 
   // Fetch module actions when user is available
@@ -274,7 +260,7 @@ export default function EmployeesPage() {
       try {
         const response = await roleService.getRoleActions(
           user.role,
-          ModuleName.EMPLOYEE
+          ModuleName.STUDENT
         );
 
         if (response.success && response.data) {
@@ -302,43 +288,43 @@ export default function EmployeesPage() {
     fetchModuleActions();
   }, [user]); // Run when user changes
 
-  // Refresh employees data
-  const refreshEmployees = async () => {
+  // Refresh students data
+  const refreshStudents = async () => {
     try {
       setLoading(true);
-      const response = await employeeService.getEmployees({
+      const response = await studentService.getStudents({
         limit: 100,
       });
 
       if (response.success && response.data) {
-        setEmployees(response.data.data);
+        setStudents(response.data.data);
       } else {
-        setEmployees([]);
+        setStudents([]);
       }
     } catch (error) {
-      console.error("Error refreshing employees:", error);
-      setEmployees([]);
+      console.error("Error refreshing students:", error);
+      setStudents([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle opening modal for adding new employee
-  const handleAddEmployee = () => {
-    setSelectedEmployee(null);
+  // Handle opening modal for adding new student
+  const handleAddStudent = () => {
+    setSelectedStudent(null);
     setIsModalOpen(true);
   };
 
-  // Handle opening modal for editing employee
-  const handleEditEmployee = (employee: Employee) => {
-    setSelectedEmployee(employee);
+  // Handle opening modal for editing student
+  const handleEditStudent = (student: Student) => {
+    setSelectedStudent(student);
     setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  // Handle opening modal for viewing employee details
-  const handleViewEmployee = (employee: Employee) => {
-    setSelectedEmployee(employee);
+  // Handle opening modal for viewing student details
+  const handleViewStudent = (student: Student) => {
+    setSelectedStudent(student);
     setIsViewMode(true);
     setIsModalOpen(true);
   };
@@ -346,49 +332,46 @@ export default function EmployeesPage() {
   // Handle closing modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedEmployee(null);
+    setSelectedStudent(null);
     setIsViewMode(false);
   };
 
   // Handle successful form submission
   const handleModalSuccess = () => {
-    refreshEmployees();
+    refreshStudents();
   };
 
   // Handle delete confirmation
-  const handleDeleteClick = (employee: Employee) => {
-    setEmployeeToDelete(employee);
+  const handleDeleteClick = (student: Student) => {
+    setStudentToDelete(student);
     setIsDeleteDialogOpen(true);
   };
 
   // Handle confirmed delete
   const handleConfirmDelete = async () => {
-    if (!employeeToDelete) return;
+    if (!studentToDelete) return;
 
     try {
-      const response = await employeeService.deleteEmployee(
-        employeeToDelete.id
-      );
-
+      const response = await studentService.deleteStudent(studentToDelete.id);
       if (response.success) {
-        toast.success("Employee deleted successfully");
-        refreshEmployees();
+        toast.success("Student deleted successfully");
+        refreshStudents();
       } else {
-        toast.error("Failed to delete employee");
+        toast.error("Failed to delete student");
       }
     } catch (error) {
-      console.error("Error deleting employee:", error);
-      toast.error("Failed to delete employee");
+      console.error("Error deleting student:", error);
+      toast.error("Error deleting student");
     } finally {
       setIsDeleteDialogOpen(false);
-      setEmployeeToDelete(null);
+      setStudentToDelete(null);
     }
   };
 
   // Handle cancel delete
   const handleCancelDelete = () => {
     setIsDeleteDialogOpen(false);
-    setEmployeeToDelete(null);
+    setStudentToDelete(null);
   };
 
   // Check if action is available in module actions
@@ -398,17 +381,25 @@ export default function EmployeesPage() {
     };
   }, [moduleActions]);
 
-  // Define columns
-  const columns: ColumnDef<Employee>[] = useMemo(
+  // Filter students based on search term and status
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const matchesSearch = student.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "all" || student.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [students, searchTerm, statusFilter]);
+
+  // Table columns definition
+  const columns: ColumnDef<Student>[] = useMemo(
     () => [
       {
-        accessorKey: "drag",
+        id: "drag",
         header: "",
-        cell: () => (
-          <div className="text-left">
-            <DragHandle />
-          </div>
-        ),
+        cell: () => <DragHandle />,
         enableSorting: false,
         enableHiding: false,
         size: 40,
@@ -495,30 +486,7 @@ export default function EmployeesPage() {
         size: 200,
         minSize: 150,
       },
-      {
-        accessorKey: "role",
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="cursor-pointer"
-            >
-              Role
-              <ArrowUpDown className="ml-2 h-2 w-2" />
-            </Button>
-          );
-        },
-        cell: ({ row }) => (
-          <div className="text-left">
-            <TableCellViewer value={row.getValue("role")} type="role" />
-          </div>
-        ),
-        size: 120,
-        maxSize: 120,
-      },
+
       {
         accessorKey: "status",
         header: ({ column }) => {
@@ -581,7 +549,7 @@ export default function EmployeesPage() {
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-          const employee = row.original;
+          const student = row.original;
 
           return (
             <div className="text-left">
@@ -600,7 +568,7 @@ export default function EmployeesPage() {
                   <DropdownMenuItem
                     onClick={async () => {
                       try {
-                        await navigator.clipboard.writeText(employee.email);
+                        await navigator.clipboard.writeText(student.email);
                         toast.success("Email copied to clipboard");
                       } catch (error) {
                         console.error("Failed to copy email:", error);
@@ -615,8 +583,8 @@ export default function EmployeesPage() {
                   <DropdownMenuSeparator />
                   {canPerformAction(ActionType.READ) && (
                     <DropdownMenuItem
+                      onClick={() => handleViewStudent(student)}
                       className="cursor-pointer"
-                      onClick={() => handleViewEmployee(employee)}
                     >
                       <Eye className="mr-2 h-4 w-4" />
                       View details
@@ -624,55 +592,40 @@ export default function EmployeesPage() {
                   )}
                   {canPerformAction(ActionType.UPDATE) && (
                     <DropdownMenuItem
+                      onClick={() => handleEditStudent(student)}
                       className="cursor-pointer"
-                      onClick={() => handleEditEmployee(employee)}
                     >
                       <Edit className="mr-2 h-4 w-4" />
-                      Edit employee
+                      Edit student
                     </DropdownMenuItem>
                   )}
                   {canPerformAction(ActionType.DELETE) && (
-                    <DropdownMenuItem
-                      className="text-red-600 cursor-pointer"
-                      onClick={() => handleDeleteClick(employee)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete employee
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(student)}
+                        className="text-red-600 cursor-pointer"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete student
+                      </DropdownMenuItem>
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           );
         },
-        size: 60,
-        maxSize: 60,
+        size: 70,
+        maxSize: 70,
       },
     ],
     [canPerformAction]
   );
 
-  // Filter employees based on search and filters
-  const filteredEmployees = useMemo(() => {
-    if (!employees || !Array.isArray(employees)) {
-      return [];
-    }
-
-    return employees.filter((employee) => {
-      const matchesSearch =
-        employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" || employee.status === statusFilter;
-      const matchesRole = roleFilter === "all" || employee.role === roleFilter;
-
-      return matchesSearch && matchesStatus && matchesRole;
-    });
-  }, [employees, searchTerm, statusFilter, roleFilter]);
-
+  // Table instance
   const table = useReactTable({
-    data: filteredEmployees,
+    data: filteredStudents,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -692,161 +645,142 @@ export default function EmployeesPage() {
 
   return (
     <div className="w-full px-4 py-2">
-      <div>
-        <div>
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Input
-                  placeholder="Search employees..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] cursor-pointer">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value={EmployeeStatus.ACTIVE}>Active</SelectItem>
-                  <SelectItem value={EmployeeStatus.INACTIVE}>
-                    Inactive
-                  </SelectItem>
-                  <SelectItem value={EmployeeStatus.SUSPENDED}>
-                    Suspended
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px] cursor-pointer">
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value={EmployeeRole.INSTRUCTOR}>
-                    Instructor
-                  </SelectItem>
-                  <SelectItem value={EmployeeRole.OPERATOR}>
-                    Operator
-                  </SelectItem>
-                  <SelectItem value={EmployeeRole.ADMIN}>Admin</SelectItem>
-                  <SelectItem value={EmployeeRole.SUPERADMIN}>
-                    Super Admin
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-2">
-              {table.getFilteredSelectedRowModel().rows.length > 0 &&
-                canPerformAction(ActionType.EXPORT) && (
-                  <Button
-                    variant="outline"
-                    className="cursor-pointer"
-                    onClick={() => {
-                      // TODO: Implement CSV export functionality
-                    }}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Export
-                  </Button>
-                )}
-              {canPerformAction(ActionType.CREATE) && (
-                <Button className="cursor-pointer" onClick={handleAddEmployee}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Add Employee
+      <div className="space-y-4">
+        {/* Filters and Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Input
+              placeholder="Search students..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="max-w-sm cursor-pointer"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] cursor-pointer">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value={StudentStatus.ACTIVE}>
+                  Active
+                </SelectItem>
+                <SelectItem value={StudentStatus.INACTIVE}>
+                  Inactive
+                </SelectItem>
+                <SelectItem value={StudentStatus.SUSPENDED}>
+                  Suspended
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center space-x-2">
+            {table.getFilteredSelectedRowModel().rows.length > 0 &&
+              canPerformAction(ActionType.READ) && (
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => {
+                    // TODO: Implement CSV export functionality
+                  }}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
                 </Button>
               )}
-            </div>
+            {canPerformAction(ActionType.CREATE) && (
+              <Button className="cursor-pointer" onClick={handleAddStudent}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+            )}
           </div>
-          <div className="rounded-md border">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <Table style={{ tableLayout: "fixed", width: "100%" }}>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead
-                            key={header.id}
-                            className="text-left"
-                            style={{ width: header.getSize() }}
-                          >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    <SortableContext
-                      items={filteredEmployees.map((emp) => emp.id)}
-                      strategy={verticalListSortingStrategy}
+        </div>
+        <div className="rounded-md border">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <Table style={{ tableLayout: "fixed", width: "100%" }}>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead
+                          key={header.id}
+                          className="text-left"
+                          style={{ width: header.getSize() }}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  <SortableContext
+                    items={filteredStudents.map((student) => student.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {table.getRowModel().rows.map((row) => (
+                      <SortableTableRow key={row.id} row={row} />
+                    ))}
+                  </SortableContext>
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
                     >
-                      {table.getRowModel().rows.map((row) => (
-                        <SortableTableRow key={row.id} row={row} />
-                      ))}
-                    </SortableContext>
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        No employees found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </DndContext>
+                      No students found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </DndContext>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="flex-1 text-sm text-muted-foreground">
-              {table.getFilteredSelectedRowModel().rows.length} of{" "}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
-            <div className="space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                className="cursor-pointer"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-                className="cursor-pointer"
-              >
-                Next
-              </Button>
-            </div>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="cursor-pointer"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="cursor-pointer"
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Employee Modal */}
-      <EmployeeModal
+      {/* Student Modal */}
+      <StudentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        employee={selectedEmployee}
+        student={selectedStudent}
         onSuccess={handleModalSuccess}
         isReadOnly={isViewMode}
         userCenterId={user?.centerId}
@@ -862,7 +796,7 @@ export default function EmployeesPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              employee <strong>{employeeToDelete?.name}</strong> and remove all
+              student <strong>{studentToDelete?.name}</strong> and remove all
               associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -877,7 +811,7 @@ export default function EmployeesPage() {
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700 cursor-pointer"
             >
-              Delete Employee
+              Delete Student
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

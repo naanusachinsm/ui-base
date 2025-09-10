@@ -5,6 +5,7 @@ import { LoginPage } from "@/pages/login";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { OrganizationsPage } from "@/pages/organization";
 import { EmployeesPage } from "@/pages/employee";
+import { StudentsPage } from "@/pages/student";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -15,10 +16,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<OrganizationsPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
             <Route path="employees" element={<EmployeesPage />} />
+            <Route path="students" element={<StudentsPage />} />
           </Route>
         </Routes>
       </Suspense>
