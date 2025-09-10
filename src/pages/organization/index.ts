@@ -1,1 +1,2 @@
-export { default as OrganizationsPage } from "./OrganizationsPage";
+export { OrganizationsPage } from "./OrganizationsPage";
+export { default as OrganizationModal } from "./OrganizationModal";

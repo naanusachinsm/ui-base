@@ -13,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useLocation, Outlet } from "react-router-dom";
+import { useLocation, Outlet, Link } from "react-router-dom";
 import { useMemo } from "react";
 
 // Navigation data for breadcrumb generation
@@ -146,8 +146,8 @@ export default function DashboardLayout() {
                       {item.isCurrentPage ? (
                         <BreadcrumbPage>{item.title}</BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink href={item.url || "#"}>
-                          {item.title}
+                        <BreadcrumbLink asChild>
+                          <Link to={item.url || "#"}>{item.title}</Link>
                         </BreadcrumbLink>
                       )}
                     </BreadcrumbItem>

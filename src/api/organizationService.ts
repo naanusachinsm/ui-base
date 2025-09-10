@@ -1,192 +1,194 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiService } from "./apiService";
+import type {
+  Organization,
+  CreateOrganizationRequest,
+  UpdateOrganizationRequest,
+  GetOrganizationsParams,
+} from "./organizationTypes";
 import type { BaseResponse, PaginatedData } from "./types";
 
-// Organization types
-export type OrganizationType =
-  | "UNIVERSITY"
-  | "CORPORATE"
-  | "TRAINING"
-  | "NON_PROFIT"
-  | "OTHER";
-export type OrganizationStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
-export type Currency = "INR" | "USD" | "EUR" | "GBP" | "AUD";
-
-export interface BillingContact {
-  name?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-}
-
-export interface OrganizationSettings {
-  [key: string]: any;
-}
-
-export interface Organization {
-  // Core Identity
-  id: number;
-  name: string;
-  code: string;
-  type: OrganizationType;
-  status: OrganizationStatus;
-
-  // Contact Information
-  contactEmail: string;
-  contactPhone?: string;
-  website?: string;
-  address?: string;
-
-  // Branding
-  logoUrl?: string;
-  establishedDate?: string;
-
-  // Configuration
-  currency: Currency;
-  timezone: string;
-  adminEmployeeId?: number;
-
-  // Extended Data
-  billingContact?: BillingContact;
-  settings?: OrganizationSettings;
-
-  // Audit Trail
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-  createdBy?: number;
-  updatedBy?: number;
-  deletedBy?: number;
-}
-
-export interface CreateOrganizationRequest {
-  // Core Identity (required)
-  name: string;
-  code: string;
-  type: OrganizationType;
-  status?: OrganizationStatus; // defaults to ACTIVE
-
-  // Contact Information (required)
-  contactEmail: string;
-  contactPhone?: string;
-  website?: string;
-  address?: string;
-
-  // Branding
-  logoUrl?: string;
-  establishedDate?: string;
-
-  // Configuration
-  currency?: Currency; // defaults to INR
-  timezone?: string; // defaults to UTC
-  adminEmployeeId?: number;
-
-  // Extended Data
-  billingContact?: BillingContact;
-  settings?: OrganizationSettings;
-}
-
-export interface UpdateOrganizationRequest {
-  // Core Identity
-  name?: string;
-  code?: string;
-  type?: OrganizationType;
-  status?: OrganizationStatus;
-
-  // Contact Information
-  contactEmail?: string;
-  contactPhone?: string;
-  website?: string;
-  address?: string;
-
-  // Branding
-  logoUrl?: string;
-  establishedDate?: string;
-
-  // Configuration
-  currency?: Currency;
-  timezone?: string;
-  adminEmployeeId?: number;
-
-  // Extended Data
-  billingContact?: BillingContact;
-  settings?: OrganizationSettings;
-}
-
-/**
- * Organization Service
- * Handles all organization-related API calls
- */
-export class OrganizationService {
-  private readonly basePath = "/api/v1/organizations";
+class OrganizationService {
+  private baseUrl = "/api/v1/organizations";
 
   /**
-   * Get all organizations with optional pagination
+   * Get all organizations with pagination and filtering
    */
-  async getOrganizations(params?: {
-    page?: number;
-    limit?: number;
-    searchTerm?: string;
-    sortOrder?: "ASC" | "DESC";
-  }): Promise<BaseResponse<PaginatedData<Organization>>> {
-    return await apiService.get<PaginatedData<Organization>>(
-      this.basePath,
-      params
-    );
+  async getOrganizations(
+    params: GetOrganizationsParams = {}
+  ): Promise<BaseResponse<PaginatedData<Organization>>> {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+    if (params.search) queryParams.append("search", params.search);
+    if (params.status) queryParams.append("status", params.status);
+    if (params.type) queryParams.append("type", params.type);
+    if (params.currency) queryParams.append("currency", params.currency);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+    const url = `${this.baseUrl}?${queryParams.toString()}`;
+    return apiService.get(url);
   }
 
   /**
-   * Get organization by ID
+   * Get a single organization by ID
    */
-  async getOrganizationById(id: number): Promise<BaseResponse<Organization>> {
-    return await apiService.get<Organization>(`${this.basePath}/${id}`);
+  async getOrganization(id: number): Promise<BaseResponse<Organization>> {
+    return apiService.get(`${this.baseUrl}/${id}`);
   }
 
   /**
-   * Create new organization
+   * Get organization by code
+   */
+  async getOrganizationByCode(
+    code: string
+  ): Promise<BaseResponse<Organization>> {
+    return apiService.get(`${this.baseUrl}/code/${code}`);
+  }
+
+  /**
+   * Create a new organization
    */
   async createOrganization(
     data: CreateOrganizationRequest
   ): Promise<BaseResponse<Organization>> {
-    return await apiService.post<Organization>(this.basePath, data);
+    return apiService.post(this.baseUrl, data);
   }
 
   /**
-   * Update organization
+   * Update an existing organization
    */
   async updateOrganization(
     id: number,
     data: UpdateOrganizationRequest
   ): Promise<BaseResponse<Organization>> {
-    return await apiService.put<Organization>(`${this.basePath}/${id}`, data);
+    const url = `${this.baseUrl}/${id}`;
+    return apiService.patch(url, data);
   }
 
   /**
-   * Delete organization
+   * Delete an organization (soft delete)
    */
-  async deleteOrganization(id: number): Promise<BaseResponse<void>> {
-    return await apiService.delete<void>(`${this.basePath}/${id}`);
+  async deleteOrganization(
+    id: number
+  ): Promise<BaseResponse<{ message: string }>> {
+    return apiService.delete(`${this.baseUrl}/${id}`);
   }
 
   /**
-   * Get organizations for dropdown/selector (simplified data)
+   * Restore a soft-deleted organization
    */
-  async getOrganizationsForSelector(): Promise<
-    BaseResponse<Array<{ id: number; name: string }>>
+  async restoreOrganization(id: number): Promise<BaseResponse<Organization>> {
+    return apiService.post(`${this.baseUrl}/${id}/restore`);
+  }
+
+  /**
+   * Permanently delete an organization
+   */
+  async forceDeleteOrganization(
+    id: number
+  ): Promise<BaseResponse<{ message: string }>> {
+    return apiService.delete(`${this.baseUrl}/${id}/force`);
+  }
+
+  /**
+   * Get organization statistics
+   */
+  async getOrganizationStats(id: number): Promise<
+    BaseResponse<{
+      totalCenters: number;
+      totalEmployees: number;
+      totalStudents: number;
+      activeCenters: number;
+      inactiveCenters: number;
+    }>
   > {
-    return await apiService.get<Array<{ id: number; name: string }>>(
-      `${this.basePath}/selector`
+    return apiService.get(`${this.baseUrl}/${id}/stats`);
+  }
+
+  /**
+   * Update organization settings
+   */
+  async updateOrganizationSettings(
+    id: number,
+    settings: Record<string, unknown>
+  ): Promise<BaseResponse<Organization>> {
+    return apiService.patch(`${this.baseUrl}/${id}/settings`, { settings });
+  }
+
+  /**
+   * Update billing contact information
+   */
+  async updateBillingContact(
+    id: number,
+    billingContact: Record<string, unknown>
+  ): Promise<BaseResponse<Organization>> {
+    return apiService.patch(`${this.baseUrl}/${id}/billing`, {
+      billingContact,
+    });
+  }
+
+  /**
+   * Get organizations by admin employee ID
+   */
+  async getOrganizationsByAdmin(
+    adminEmployeeId: number
+  ): Promise<BaseResponse<Organization[]>> {
+    return apiService.get(`${this.baseUrl}/admin/${adminEmployeeId}`);
+  }
+
+  /**
+   * Transfer organization admin
+   */
+  async transferAdmin(
+    id: number,
+    newAdminEmployeeId: number
+  ): Promise<BaseResponse<Organization>> {
+    return apiService.patch(`${this.baseUrl}/${id}/transfer-admin`, {
+      adminEmployeeId: newAdminEmployeeId,
+    });
+  }
+
+  /**
+   * Validate organization code uniqueness
+   */
+  async validateCode(
+    code: string,
+    excludeId?: number
+  ): Promise<BaseResponse<{ isUnique: boolean }>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append("code", code);
+    if (excludeId) queryParams.append("excludeId", excludeId.toString());
+
+    return apiService.get(
+      `${this.baseUrl}/validate-code?${queryParams.toString()}`
+    );
+  }
+
+  /**
+   * Validate organization email uniqueness
+   */
+  async validateEmail(
+    email: string,
+    excludeId?: number
+  ): Promise<BaseResponse<{ isUnique: boolean }>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append("email", email);
+    if (excludeId) queryParams.append("excludeId", excludeId.toString());
+
+    return apiService.get(
+      `${this.baseUrl}/validate-email?${queryParams.toString()}`
     );
   }
 }
 
-// Export a singleton instance
 export const organizationService = new OrganizationService();
 
-// Export helper functions
+// Helper functions for organization operations
 export const OrganizationHelpers = {
   /**
-   * Check if organizations fetch was successful
+   * Check if get organizations response was successful
    */
   isGetOrganizationsSuccess: (
     response: BaseResponse<PaginatedData<Organization>>
@@ -195,19 +197,19 @@ export const OrganizationHelpers = {
   },
 
   /**
-   * Extract organizations array from paginated response
+   * Extract organizations from response
    */
   getOrganizationsFromResponse: (
     response: BaseResponse<PaginatedData<Organization>>
   ): Organization[] => {
-    if (response.success === true && response.data?.data) {
+    if (response.success && response.data?.data) {
       return response.data.data;
     }
     return [];
   },
 
   /**
-   * Check if single organization fetch was successful
+   * Check if get organization response was successful
    */
   isGetOrganizationSuccess: (response: BaseResponse<Organization>): boolean => {
     return response.success === true && !!response.data;
@@ -219,20 +221,69 @@ export const OrganizationHelpers = {
   getOrganizationFromResponse: (
     response: BaseResponse<Organization>
   ): Organization | null => {
-    return response.data ?? null;
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return null;
   },
 
   /**
-   * Transform organization for team switcher component
+   * Check if create organization response was successful
    */
-  transformForTeamSwitcher: (
-    organizations: Organization[]
-  ): Array<{ id: number; name: string; logo: any; plan: string }> => {
-    return organizations.map((org) => ({
-      id: org.id,
-      name: org.name,
-      logo: null, // Will be set by the component
-      plan: org.status || "Active",
-    }));
+  isCreateOrganizationSuccess: (
+    response: BaseResponse<Organization>
+  ): boolean => {
+    return response.success === true && !!response.data;
+  },
+
+  /**
+   * Check if update organization response was successful
+   */
+  isUpdateOrganizationSuccess: (
+    response: BaseResponse<Organization>
+  ): boolean => {
+    return response.success === true && !!response.data;
+  },
+
+  /**
+   * Check if delete organization response was successful
+   */
+  isDeleteOrganizationSuccess: (
+    response: BaseResponse<{ message: string }>
+  ): boolean => {
+    return response.success === true;
+  },
+
+  /**
+   * Format organization name for display
+   */
+  formatOrganizationName: (organization: Organization): string => {
+    return `${organization.name} (${organization.code})`;
+  },
+
+  /**
+   * Get organization status color class
+   */
+  getStatusColorClass: (status: string): string => {
+    const statusColors: Record<string, string> = {
+      ACTIVE: "text-green-600 bg-green-50",
+      INACTIVE: "text-gray-600 bg-gray-50",
+      SUSPENDED: "text-red-600 bg-red-50",
+    };
+    return statusColors[status] || "text-gray-600 bg-gray-50";
+  },
+
+  /**
+   * Get organization type color class
+   */
+  getTypeColorClass: (type: string): string => {
+    const typeColors: Record<string, string> = {
+      UNIVERSITY: "text-blue-600 bg-blue-50",
+      CORPORATE: "text-purple-600 bg-purple-50",
+      TRAINING: "text-orange-600 bg-orange-50",
+      NON_PROFIT: "text-green-600 bg-green-50",
+      OTHER: "text-gray-600 bg-gray-50",
+    };
+    return typeColors[type] || "text-gray-600 bg-gray-50";
   },
 };

@@ -9,7 +9,6 @@ export type { LoginRequest, LoginResponse, User } from "./authService";
 
 // Organization Service
 export {
-  OrganizationService,
   organizationService,
   OrganizationHelpers,
 } from "./organizationService";
@@ -17,12 +16,22 @@ export type {
   Organization,
   CreateOrganizationRequest,
   UpdateOrganizationRequest,
+  GetOrganizationsParams,
+  GetOrganizationsResponse,
   OrganizationType,
   OrganizationStatus,
   Currency,
   BillingContact,
   OrganizationSettings,
-} from "./organizationService";
+} from "./organizationTypes";
+export {
+  OrganizationTypeLabels,
+  OrganizationStatusLabels,
+  CurrencyLabels,
+  OrganizationStatusColors,
+  OrganizationTypeColors,
+  CommonTimezones,
+} from "./organizationTypes";
 
 // Employee Service
 export { employeeService } from "./employeeService";
@@ -52,10 +61,7 @@ export type {
   GetCentersResponse,
   CenterStatus,
 } from "./centerTypes";
-export {
-  CenterStatusLabels,
-  CenterStatusColors,
-} from "./centerTypes";
+export { CenterStatusLabels, CenterStatusColors } from "./centerTypes";
 
 // Role Service (RBAC)
 export { roleService } from "./roleService";
