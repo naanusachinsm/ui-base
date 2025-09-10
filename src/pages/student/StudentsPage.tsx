@@ -139,7 +139,7 @@ const SortableTableRow = ({ row }: { row: Row<Student> }) => {
       {row.getVisibleCells().map((cell) => (
         <TableCell
           key={cell.id}
-          className="text-left"
+          className="text-left align-middle !px-2"
           style={{ width: cell.column.getSize() }}
         >
           {cell.column.id === "drag" ? (
@@ -480,13 +480,11 @@ export default function StudentsPage() {
           />
         ),
         cell: ({ row }) => (
-          <div className="text-left">
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
-            />
-          </div>
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
         ),
         enableSorting: false,
         enableHiding: false,
@@ -506,11 +504,9 @@ export default function StudentsPage() {
             .toUpperCase()
             .slice(0, 2);
           return (
-            <div className="text-left">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-              </Avatar>
-            </div>
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
           );
         },
         enableSorting: false,
@@ -534,12 +530,10 @@ export default function StudentsPage() {
           );
         },
         cell: ({ row }) => (
-          <div className="text-left">
-            <div className="flex flex-col">
-              <div className="font-medium">{row.getValue("name")}</div>
-              <div className="text-sm text-muted-foreground">
-                {row.original.email}
-              </div>
+          <div className="flex flex-col">
+            <div className="font-medium">{row.getValue("name")}</div>
+            <div className="text-sm text-muted-foreground">
+              {row.original.email}
             </div>
           </div>
         ),
@@ -548,36 +542,10 @@ export default function StudentsPage() {
       },
 
       {
-        accessorKey: "status",
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="cursor-pointer"
-            >
-              Status
-              <ArrowUpDown className="ml-2 h-2 w-2" />
-            </Button>
-          );
-        },
-        cell: ({ row }) => (
-          <div className="text-left">
-            <TableCellViewer value={row.getValue("status")} type="status" />
-          </div>
-        ),
-        size: 100,
-        maxSize: 100,
-      },
-      {
         accessorKey: "phone",
         header: "Phone",
         cell: ({ row }) => (
-          <div className="text-left">
-            <TableCellViewer value={row.getValue("phone")} type="phone" />
-          </div>
+          <TableCellViewer value={row.getValue("phone")} type="phone" />
         ),
         size: 130,
         maxSize: 130,
@@ -600,7 +568,7 @@ export default function StudentsPage() {
         },
         cell: ({ row }) => {
           const date = new Date(row.getValue("createdAt"));
-          return <div className="text-left">{date.toLocaleDateString()}</div>;
+          return <span>{date.toLocaleDateString()}</span>;
         },
         size: 110,
         maxSize: 110,
@@ -612,68 +580,63 @@ export default function StudentsPage() {
           const student = row.original;
 
           return (
-            <div className="text-left">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-8 w-8 p-0 cursor-pointer"
-                  >
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(student.email);
+                      toast.success("Email copied to clipboard");
+                    } catch (error) {
+                      console.error("Failed to copy email:", error);
+                      toast.error("Failed to copy email");
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy email
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {canPerformAction(ActionType.READ) && (
                   <DropdownMenuItem
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(student.email);
-                        toast.success("Email copied to clipboard");
-                      } catch (error) {
-                        console.error("Failed to copy email:", error);
-                        toast.error("Failed to copy email");
-                      }
-                    }}
+                    onClick={() => handleViewStudent(student)}
                     className="cursor-pointer"
                   >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy email
+                    <Eye className="mr-2 h-4 w-4" />
+                    View details
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {canPerformAction(ActionType.READ) && (
+                )}
+                {canPerformAction(ActionType.UPDATE) && (
+                  <DropdownMenuItem
+                    onClick={() => handleEditStudent(student)}
+                    className="cursor-pointer"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit student
+                  </DropdownMenuItem>
+                )}
+                {canPerformAction(ActionType.DELETE) && (
+                  <>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => handleViewStudent(student)}
-                      className="cursor-pointer"
+                      onClick={() => handleDeleteClick(student)}
+                      className="text-red-600 cursor-pointer"
                     >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View details
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete student
                     </DropdownMenuItem>
-                  )}
-                  {canPerformAction(ActionType.UPDATE) && (
-                    <DropdownMenuItem
-                      onClick={() => handleEditStudent(student)}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit student
-                    </DropdownMenuItem>
-                  )}
-                  {canPerformAction(ActionType.DELETE) && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(student)}
-                        className="text-red-600 cursor-pointer"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete student
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           );
         },
         size: 70,
@@ -768,7 +731,7 @@ export default function StudentsPage() {
                       return (
                         <TableHead
                           key={header.id}
-                          className="text-left"
+                          className="text-left align-middle !px-2"
                           style={{ width: header.getSize() }}
                         >
                           {header.isPlaceholder
