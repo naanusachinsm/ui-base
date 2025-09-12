@@ -63,6 +63,24 @@ export type {
 } from "./centerTypes";
 export { CenterStatusLabels, CenterStatusColors } from "./centerTypes";
 
+// Course Service
+export { courseService, CourseHelpers } from "./courseService";
+export type {
+  Course,
+  CreateCourseRequest,
+  UpdateCourseRequest,
+  GetCoursesParams,
+  GetCoursesResponse,
+  CourseStatus,
+  CourseDifficulty,
+} from "./courseTypes";
+export {
+  CourseStatusLabels,
+  CourseDifficultyLabels,
+  CourseStatusColors,
+  CourseDifficultyColors,
+} from "./courseTypes";
+
 // Role Service (RBAC)
 export { roleService } from "./roleService";
 export type {
