@@ -13,8 +13,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useLocation, Outlet, Link } from "react-router-dom";
-import { useMemo } from "react";
+import { useLocation, Outlet, Link, useParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { courseService } from "@/api/courseService";
 
 // Navigation data for breadcrumb generation
 const navData = {
@@ -78,6 +79,27 @@ interface BreadcrumbItem {
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const params = useParams();
+  const [courseName, setCourseName] = useState<string>("");
+
+  // Fetch course name for course details pages
+  useEffect(() => {
+    if (params.id && location.pathname.includes("/courses/")) {
+      const fetchCourseName = async () => {
+        try {
+          const response = await courseService.getCourseById(
+            parseInt(params.id!)
+          );
+          if (response.success && response.data) {
+            setCourseName(response.data.name);
+          }
+        } catch (error) {
+          console.error("Error fetching course name:", error);
+        }
+      };
+      fetchCourseName();
+    }
+  }, [params.id, location.pathname]);
 
   // Generate dynamic breadcrumbs based on current path
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
@@ -90,6 +112,17 @@ export default function DashboardLayout() {
     // If we're on the main dashboard page or organizations (default), show Organizations
     if (path === "/dashboard" || path === "/dashboard/organizations") {
       breadcrumbItems.push({ title: "Organizations", isCurrentPage: true });
+      return breadcrumbItems;
+    }
+
+    // Handle course details pages
+    if (path.includes("/courses/") && params.id) {
+      breadcrumbItems.push({ title: "Academic" });
+      breadcrumbItems.push({ title: "Courses", url: "/dashboard/courses" });
+      breadcrumbItems.push({
+        title: courseName || `Course ${params.id}`,
+        isCurrentPage: true,
+      });
       return breadcrumbItems;
     }
 
@@ -124,7 +157,7 @@ export default function DashboardLayout() {
     }
 
     return breadcrumbItems;
-  }, [location.pathname]);
+  }, [location.pathname, params.id, courseName]);
 
   return (
     <SidebarProvider>

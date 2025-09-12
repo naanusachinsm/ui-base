@@ -7,7 +7,7 @@ import { OrganizationsPage } from "@/pages/organization";
 import { EmployeesPage } from "@/pages/employee";
 import { StudentsPage } from "@/pages/student";
 import { CentersPage } from "@/pages/center";
-import { CoursesPage } from "@/pages/course";
+import { CoursesPage, CourseDetailsPage } from "@/pages/course";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -25,6 +25,7 @@ function App() {
             <Route path="employees" element={<EmployeesPage />} />
             <Route path="students" element={<StudentsPage />} />
             <Route path="courses" element={<CoursesPage />} />
+            <Route path="courses/:id" element={<CourseDetailsPage />} />
           </Route>
         </Routes>
       </Suspense>

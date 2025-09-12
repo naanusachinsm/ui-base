@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface CourseCardProps {
+  id: number;
   name: string;
   category: string;
   tags: string;
@@ -17,6 +19,7 @@ interface CourseCardProps {
 }
 
 export function CourseCard({
+  id,
   name,
   category,
   tags,
@@ -25,10 +28,18 @@ export function CourseCard({
   description,
   status,
 }: CourseCardProps) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/dashboard/courses/${id}`);
+  };
   const tagArray = tags && tags.trim() ? tags.split(", ") : [];
 
   return (
-    <Card className="relative overflow-hidden bg-white border border-gray-200 cursor-pointer">
+    <Card
+      className="relative overflow-hidden bg-white border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+      onClick={handleClick}
+    >
       <CardContent>
         {/* Header */}
         <div className="">

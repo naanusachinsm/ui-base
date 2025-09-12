@@ -148,6 +148,7 @@ export function CoursesPage() {
           {courses.map((course) => (
             <CourseCard
               key={course.id}
+              id={course.id}
               name={course.name}
               category={course.category?.name || "General"}
               tags={Array.isArray(course.tags) ? course.tags.join(", ") : ""}

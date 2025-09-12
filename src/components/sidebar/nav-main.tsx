@@ -55,10 +55,23 @@ export function NavMain({
               <CollapsibleContent>
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => {
-                    const isSubItemActive =
-                      location.pathname === subItem.url ||
-                      (subItem.url === "/dashboard/organizations" &&
-                        location.pathname === "/dashboard");
+                    // Check for exact match first
+                    let isSubItemActive = location.pathname === subItem.url;
+
+                    // Special cases for dynamic routes
+                    if (!isSubItemActive) {
+                      if (
+                        subItem.url === "/dashboard/organizations" &&
+                        location.pathname === "/dashboard"
+                      ) {
+                        isSubItemActive = true;
+                      } else if (
+                        subItem.url === "/dashboard/courses" &&
+                        location.pathname.startsWith("/dashboard/courses")
+                      ) {
+                        isSubItemActive = true;
+                      }
+                    }
 
                     return (
                       <SidebarMenuSubItem key={subItem.title}>
@@ -67,7 +80,7 @@ export function NavMain({
                           isActive={isSubItemActive}
                           className={
                             isSubItemActive
-                              ? "bg-slate-800 text-white font-medium h-8 dark:bg-slate-700"
+                              ? "bg-slate-900 text-white font-medium h-8 dark:bg-slate-800"
                               : ""
                           }
                         >

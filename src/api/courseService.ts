@@ -12,6 +12,14 @@ class CourseService {
   private baseUrl = "/api/v1/courses";
 
   /**
+   * Get course by ID with modules and chapters
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getCourseById(id: number): Promise<BaseResponse<any>> {
+    return await apiService.get(`${this.baseUrl}/${id}`);
+  }
+
+  /**
    * Get all courses with pagination and filtering
    */
   async getCourses(
