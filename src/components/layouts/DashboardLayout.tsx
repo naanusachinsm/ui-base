@@ -14,8 +14,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useLocation, Outlet, Link, useParams } from "react-router-dom";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { courseService } from "@/api/courseService";
+import { cohortService } from "@/api/cohortService";
 
 // Navigation data for breadcrumb generation
 const navData = {
@@ -81,6 +82,8 @@ export default function DashboardLayout() {
   const location = useLocation();
   const params = useParams();
   const [courseName, setCourseName] = useState<string>("");
+  const [cohortName, setCohortName] = useState<string>("");
+  const [lastCohortId, setLastCohortId] = useState<number | null>(null);
 
   // Fetch course name for course details pages
   useEffect(() => {
@@ -100,6 +103,34 @@ export default function DashboardLayout() {
       fetchCourseName();
     }
   }, [params.id, location.pathname]);
+
+  // Memoize the cohort fetch function
+  const fetchCohortName = useCallback(async (cohortId: number) => {
+    try {
+      const response = await cohortService.getCohort(cohortId);
+      if (response.success && response.data) {
+        setCohortName(response.data.name);
+      }
+    } catch (error) {
+      console.error("Error fetching cohort name:", error);
+    }
+  }, []);
+
+  // Fetch cohort name for cohort details pages
+  useEffect(() => {
+    if (params.id && location.pathname.includes("/cohorts/")) {
+      const cohortId = parseInt(params.id!);
+      // Only fetch if we don't already have the name for this cohort ID
+      if (lastCohortId !== cohortId) {
+        fetchCohortName(cohortId);
+        setLastCohortId(cohortId);
+      }
+    } else {
+      // Reset cohort name when not on cohort details page
+      setCohortName("");
+      setLastCohortId(null);
+    }
+  }, [params.id, location.pathname, fetchCohortName, lastCohortId]);
 
   // Generate dynamic breadcrumbs based on current path
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
@@ -121,6 +152,17 @@ export default function DashboardLayout() {
       breadcrumbItems.push({ title: "Courses", url: "/dashboard/courses" });
       breadcrumbItems.push({
         title: courseName || `Course ${params.id}`,
+        isCurrentPage: true,
+      });
+      return breadcrumbItems;
+    }
+
+    // Handle cohort details pages
+    if (path.includes("/cohorts/") && params.id) {
+      breadcrumbItems.push({ title: "Academic" });
+      breadcrumbItems.push({ title: "Cohorts", url: "/dashboard/cohorts" });
+      breadcrumbItems.push({
+        title: cohortName || `Cohort ${params.id}`,
         isCurrentPage: true,
       });
       return breadcrumbItems;
@@ -157,7 +199,7 @@ export default function DashboardLayout() {
     }
 
     return breadcrumbItems;
-  }, [location.pathname, params.id, courseName]);
+  }, [location.pathname, params.id, courseName, cohortName]);
 
   return (
     <SidebarProvider>

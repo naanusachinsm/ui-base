@@ -1,0 +1,2 @@
+export { CohortCard } from "./CohortCard";
+
