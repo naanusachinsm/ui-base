@@ -167,6 +167,25 @@ export {
   FeedbackHelpers,
 } from "./feedbackTypes";
 
+// Class Service
+export { classService } from "./classService";
+export type {
+  Class,
+  CreateClassRequest,
+  UpdateClassRequest,
+  GetClassesParams,
+  GetClassesResponse,
+  ClassMode,
+  ClassStatus,
+} from "./classTypes";
+export {
+  ClassModeLabels,
+  ClassStatusLabels,
+  ClassModeColors,
+  ClassStatusColors,
+  ClassHelpers,
+} from "./classTypes";
+
 // Audit Log Service
 export { auditLogService } from "./auditService";
 export type {

@@ -157,6 +157,38 @@ class CourseService {
   ): Promise<BaseResponse<PaginatedData<Course>>> {
     return this.getCourses({ ...params, isPublic: true });
   }
+
+  /**
+   * Get course modules
+   */
+  async getCourseModules(
+    params: { courseId?: number; page?: number; limit?: number } = {}
+  ): Promise<BaseResponse<PaginatedData<any>>> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.courseId) queryParams.append("courseId", params.courseId.toString());
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+
+    const url = `${this.baseUrl}/modules?${queryParams.toString()}`;
+    return apiService.get(url);
+  }
+
+  /**
+   * Get course chapters
+   */
+  async getCourseChapters(
+    params: { courseModuleId?: number; page?: number; limit?: number } = {}
+  ): Promise<BaseResponse<PaginatedData<any>>> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.courseModuleId) queryParams.append("courseModuleId", params.courseModuleId.toString());
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+
+    const url = `${this.baseUrl}/chapters?${queryParams.toString()}`;
+    return apiService.get(url);
+  }
 }
 
 export const courseService = new CourseService();

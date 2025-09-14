@@ -26,7 +26,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAppStore } from "@/stores/appStore";
-import { authService } from "@/api";
 
 export function NavUser({
   user,

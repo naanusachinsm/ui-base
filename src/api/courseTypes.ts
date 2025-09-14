@@ -104,6 +104,30 @@ export interface Course {
   reviewCount?: number;
 }
 
+export interface CourseModule {
+  id: number;
+  courseId: number;
+  name: string;
+  description?: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseChapter {
+  id: number;
+  courseModuleId: number;
+  name: string;
+  description?: string;
+  content?: string;
+  order: number;
+  duration?: number; // in minutes
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateCourseRequest {
   centerId: number;
   name: string;
@@ -327,4 +351,3 @@ export const CourseHelpers = {
     }`;
   },
 };
-

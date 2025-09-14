@@ -15,8 +15,6 @@ import {
   User,
   Activity,
   Calendar,
-  Globe,
-  Monitor,
   FileText,
   Database,
   AlertCircle,
@@ -26,7 +24,6 @@ import {
 import type { AuditLog } from "@/api/auditTypes";
 import {
   AuditActionLabels,
-  AuditModuleLabels,
   AuditStatusLabels,
   AuditStatusColors,
   AuditActionColors,

@@ -9,6 +9,7 @@ import { StudentsPage } from "@/pages/student";
 import { CentersPage } from "@/pages/center";
 import { CoursesPage, CourseDetailsPage } from "@/pages/course";
 import { CohortsPage, CohortDetailsPage } from "@/pages/cohort";
+import { ClassesPage } from "@/pages/class";
 import { EnrollmentsPage } from "@/pages/enrollment";
 import { EnquiriesPage, EnquiryFormPage } from "@/pages/enquiry";
 import { PaymentsPage } from "@/pages/payment";
@@ -34,6 +35,7 @@ function App() {
             <Route path="courses/:id" element={<CourseDetailsPage />} />
             <Route path="cohorts" element={<CohortsPage />} />
             <Route path="cohorts/:id" element={<CohortDetailsPage />} />
+            <Route path="classes" element={<ClassesPage />} />
             <Route path="enrollments" element={<EnrollmentsPage />} />
             <Route path="enquiries" element={<EnquiriesPage />} />
             <Route path="enquiries/new" element={<EnquiryFormPage />} />
