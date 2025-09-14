@@ -102,13 +102,10 @@ export type {
   GetEnrollmentsParams,
   GetEnrollmentsResponse,
   EnrollmentStatus,
-  PaymentStatus,
 } from "./enrollmentTypes";
 export {
   EnrollmentStatusLabels,
-  PaymentStatusLabels,
   EnrollmentStatusColors,
-  PaymentStatusColors,
   EnrollmentHelpers,
 } from "./enrollmentTypes";
 
@@ -134,6 +131,25 @@ export {
   EnquirySourceColors,
   EnquiryStatusColors,
 } from "./enquiryTypes";
+
+// Payment Service
+export { paymentService } from "./paymentService";
+export type {
+  Payment,
+  CreatePaymentRequest,
+  UpdatePaymentRequest,
+  PaymentFilters,
+  PaginatedPayments,
+  PaymentMethod,
+  PaymentStatus,
+} from "./paymentTypes";
+export {
+  PaymentMethodLabels,
+  PaymentStatusLabels,
+  PaymentMethodColors,
+  PaymentStatusColors,
+  PaymentHelpers,
+} from "./paymentTypes";
 
 // Types and Interfaces
 export * from "./types";
