@@ -593,19 +593,55 @@ export default function EnrollmentsPage() {
                   <DropdownMenuItem
                     onClick={async () => {
                       try {
+                        const enrollmentData = {
+                          id: enrollment.id,
+                          studentId: enrollment.studentId,
+                          cohortId: enrollment.cohortId,
+                          enrollmentDate: enrollment.enrollmentDate,
+                          status: enrollment.status,
+                          paymentStatus: enrollment.paymentStatus,
+                          paymentId: enrollment.paymentId,
+                          description: enrollment.description,
+                          createdAt: enrollment.createdAt,
+                          updatedAt: enrollment.updatedAt,
+                          student: {
+                            id: enrollment.student?.id,
+                            name: enrollment.student?.name,
+                            email: enrollment.student?.email,
+                          },
+                          cohort: {
+                            id: enrollment.cohort?.id,
+                            name: enrollment.cohort?.name,
+                            code: enrollment.cohort?.code,
+                            startDate: enrollment.cohort?.startDate,
+                            endDate: enrollment.cohort?.endDate,
+                            mode: enrollment.cohort?.mode,
+                            capacity: enrollment.cohort?.capacity,
+                            status: enrollment.cohort?.status,
+                            course: {
+                              name: enrollment.cohort?.course?.name,
+                            },
+                            center: {
+                              name: enrollment.cohort?.center?.name,
+                            },
+                            instructor: {
+                              name: enrollment.cohort?.instructor?.name,
+                            },
+                          },
+                        };
                         await navigator.clipboard.writeText(
-                          enrollment.id.toString()
+                          JSON.stringify(enrollmentData, null, 2)
                         );
-                        toast.success("Enrollment ID copied to clipboard");
+                        toast.success("Enrollment data copied to clipboard");
                       } catch (error) {
-                        console.error("Failed to copy enrollment ID:", error);
-                        toast.error("Failed to copy enrollment ID");
+                        console.error("Failed to copy enrollment data:", error);
+                        toast.error("Failed to copy enrollment data");
                       }
                     }}
                     className="cursor-pointer"
                   >
                     <Copy className="mr-2 h-4 w-4" />
-                    Copy ID
+                    Copy Data
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {canPerformAction(ActionType.READ) && (
