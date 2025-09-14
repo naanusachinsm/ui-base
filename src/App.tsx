@@ -13,6 +13,7 @@ import { EnrollmentsPage } from "@/pages/enrollment";
 import { EnquiriesPage, EnquiryFormPage } from "@/pages/enquiry";
 import { PaymentsPage } from "@/pages/payment";
 import { FeedbacksPage } from "@/pages/feedback";
+import { AuditLogsPage } from "@/pages/audit";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -39,6 +40,7 @@ function App() {
             <Route path="enquiries/:id" element={<EnquiryFormPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="feedbacks" element={<FeedbacksPage />} />
+            <Route path="audit-logs" element={<AuditLogsPage />} />
           </Route>
         </Routes>
       </Suspense>

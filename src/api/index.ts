@@ -167,6 +167,25 @@ export {
   FeedbackHelpers,
 } from "./feedbackTypes";
 
+// Audit Log Service
+export { auditLogService } from "./auditService";
+export type {
+  AuditLog,
+  AuditLogFilters,
+  PaginatedAuditLogs,
+  AuditAction,
+  AuditModule,
+  AuditStatus,
+} from "./auditTypes";
+export {
+  AuditActionLabels,
+  AuditModuleLabels,
+  AuditStatusLabels,
+  AuditStatusColors,
+  AuditActionColors,
+  AuditLogHelpers,
+} from "./auditTypes";
+
 // Types and Interfaces
 export * from "./types";
 
