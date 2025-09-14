@@ -48,17 +48,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Analytics",
           url: "#",
           icon: BarChart3,
-          isActive:
-            location.pathname.startsWith("/dashboard/overview") ||
-            location.pathname.startsWith("/dashboard/notifications"),
+          isActive: location.pathname.startsWith("/dashboard/overview"),
           items: [
             {
               title: "Overview",
               url: "/dashboard/overview",
-            },
-            {
-              title: "Notifications",
-              url: "/dashboard/notifications",
             },
           ],
         },

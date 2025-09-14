@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Home from "@/pages/Home";
 import { LoginPage } from "@/pages/login";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import OverviewPage from "@/pages/overview";
 import { OrganizationsPage } from "@/pages/organization";
 import { EmployeesPage } from "@/pages/employee";
 import { StudentsPage } from "@/pages/student";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/enquiry/:id" element={<PublicEnquiryFormPage />} />
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<OrganizationsPage />} />
+            <Route path="overview" element={<OverviewPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
             <Route path="centers" element={<CentersPage />} />
             <Route path="employees" element={<EmployeesPage />} />

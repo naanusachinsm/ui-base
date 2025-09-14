@@ -24,10 +24,7 @@ const navData = {
     {
       title: "Analytics",
       url: "#",
-      items: [
-        { title: "Overview", url: "/dashboard/overview" },
-        { title: "Notifications", url: "/dashboard/notifications" },
-      ],
+      items: [{ title: "Overview", url: "/dashboard/overview" }],
     },
     {
       title: "Organization",
