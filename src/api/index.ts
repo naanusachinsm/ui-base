@@ -112,6 +112,29 @@ export {
   EnrollmentHelpers,
 } from "./enrollmentTypes";
 
+// Enquiry Service
+export { enquiryService } from "./enquiryService";
+export type {
+  Enquiry,
+  CreateEnquiryRequest,
+  UpdateEnquiryRequest,
+  EnquiryFilters,
+  PaginatedEnquiries,
+  DocumentDto,
+} from "./enquiryTypes";
+export {
+  EnquirySource,
+  EnquiryStatus,
+  Gender,
+  ModeOfLearning,
+  EnquirySourceLabels,
+  EnquiryStatusLabels,
+  GenderLabels,
+  ModeOfLearningLabels,
+  EnquirySourceColors,
+  EnquiryStatusColors,
+} from "./enquiryTypes";
+
 // Types and Interfaces
 export * from "./types";
 

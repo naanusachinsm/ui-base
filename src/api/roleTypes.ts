@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Role entity types and interfaces for RBAC
 
 export interface Role {
@@ -59,6 +58,7 @@ export const ModuleName = {
   COURSE: "COURSES",
   COHORT: "COHORTS",
   ENROLLMENT: "ENROLLMENTS",
+  ENQUIRY: "ENQUIRIES",
   ROLE: "ROLES",
   ORGANIZATION: "ORGANIZATIONS",
   USER: "USERS",

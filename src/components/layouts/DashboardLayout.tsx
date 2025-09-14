@@ -183,6 +183,13 @@ export default function DashboardLayout() {
       }
     }
 
+    // Handle enquiry paths specifically
+    if (path.includes("/enquiries/")) {
+      breadcrumbItems.push({ title: "Business" });
+      breadcrumbItems.push({ title: "Enquiries", url: "/dashboard/enquiries" });
+      return breadcrumbItems;
+    }
+
     // If no match found, generate from path segments
     if (breadcrumbItems.length === 1) {
       const segments = path.split("/").filter(Boolean).slice(1); // Remove 'dashboard'
