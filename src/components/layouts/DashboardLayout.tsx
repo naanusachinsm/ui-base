@@ -61,7 +61,7 @@ const navData = {
       items: [
         { title: "Enquiries", url: "/dashboard/enquiries" },
         { title: "Payments", url: "/dashboard/payments" },
-        { title: "Feedback", url: "/dashboard/feedback" },
+        { title: "Feedback", url: "/dashboard/feedbacks" },
       ],
     },
     {

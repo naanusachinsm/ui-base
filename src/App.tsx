@@ -12,6 +12,7 @@ import { CohortsPage, CohortDetailsPage } from "@/pages/cohort";
 import { EnrollmentsPage } from "@/pages/enrollment";
 import { EnquiriesPage, EnquiryFormPage } from "@/pages/enquiry";
 import { PaymentsPage } from "@/pages/payment";
+import { FeedbacksPage } from "@/pages/feedback";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -37,6 +38,7 @@ function App() {
             <Route path="enquiries/new" element={<EnquiryFormPage />} />
             <Route path="enquiries/:id" element={<EnquiryFormPage />} />
             <Route path="payments" element={<PaymentsPage />} />
+            <Route path="feedbacks" element={<FeedbacksPage />} />
           </Route>
         </Routes>
       </Suspense>

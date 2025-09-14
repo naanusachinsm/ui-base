@@ -151,6 +151,22 @@ export {
   PaymentHelpers,
 } from "./paymentTypes";
 
+// Feedback Service
+export { feedbackService } from "./feedbackService";
+export type {
+  Feedback,
+  CreateFeedbackRequest,
+  UpdateFeedbackRequest,
+  FeedbackFilters,
+  PaginatedFeedbacks,
+  FeedbackStatus,
+} from "./feedbackTypes";
+export {
+  FeedbackStatusLabels,
+  FeedbackStatusColors,
+  FeedbackHelpers,
+} from "./feedbackTypes";
+
 // Types and Interfaces
 export * from "./types";
 

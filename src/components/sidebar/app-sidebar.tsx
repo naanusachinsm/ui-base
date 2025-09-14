@@ -134,7 +134,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           isActive:
             location.pathname.startsWith("/dashboard/enquiries") ||
             location.pathname.startsWith("/dashboard/payments") ||
-            location.pathname.startsWith("/dashboard/feedback"),
+            location.pathname.startsWith("/dashboard/feedbacks"),
           items: [
             {
               title: "Enquiries",
@@ -146,7 +146,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             },
             {
               title: "Feedback",
-              url: "/dashboard/feedback",
+              url: "/dashboard/feedbacks",
             },
           ],
         },
