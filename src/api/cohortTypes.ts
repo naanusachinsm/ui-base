@@ -62,6 +62,7 @@ export interface Cohort {
   centerId: number;
   instructorEmployeeId: number;
   name: string;
+  code: string;
   startDate: string;
   endDate: string;
   mode: string;

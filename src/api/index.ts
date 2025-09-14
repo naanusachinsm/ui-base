@@ -93,6 +93,25 @@ export type {
   ModuleActionsResponse,
 } from "./roleTypes";
 
+// Enrollment Service
+export { enrollmentService } from "./enrollmentService";
+export type {
+  Enrollment,
+  CreateEnrollmentRequest,
+  UpdateEnrollmentRequest,
+  GetEnrollmentsParams,
+  GetEnrollmentsResponse,
+  EnrollmentStatus,
+  PaymentStatus,
+} from "./enrollmentTypes";
+export {
+  EnrollmentStatusLabels,
+  PaymentStatusLabels,
+  EnrollmentStatusColors,
+  PaymentStatusColors,
+  EnrollmentHelpers,
+} from "./enrollmentTypes";
+
 // Types and Interfaces
 export * from "./types";
 
