@@ -52,11 +52,16 @@ function Header() {
     navigate("/login");
   };
 
+  const handleEnquiry = () => {
+    navigate("/enquiry");
+  };
+
   const navigation = [
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
     { name: "Contact", href: "#contact" },
+    { name: "Enquiry", href: "/enquiry" },
   ];
 
   const themeIcons = {
@@ -81,15 +86,25 @@ function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
-              >
-                {item.name}
-              </a>
-            ))}
+            {navigation.map((item) =>
+              item.name === "Enquiry" ? (
+                <button
+                  key={item.name}
+                  onClick={handleEnquiry}
+                  className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
+                >
+                  {item.name}
+                </button>
+              ) : (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
+                >
+                  {item.name}
+                </a>
+              )
+            )}
           </nav>
 
           {/* Desktop Actions */}
@@ -164,16 +179,29 @@ function Header() {
             className="md:hidden py-4 border-t border-border"
           >
             <nav className="flex flex-col space-y-4">
-              {navigation.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </a>
-              ))}
+              {navigation.map((item) =>
+                item.name === "Enquiry" ? (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      handleEnquiry();
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer text-left"
+                  >
+                    {item.name}
+                  </button>
+                ) : (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </a>
+                )
+              )}
               <div className="flex flex-col space-y-2 pt-4 border-t border-border">
                 {/* Mobile Theme Switcher */}
                 <DropdownMenu>

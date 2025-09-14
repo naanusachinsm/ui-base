@@ -11,7 +11,11 @@ import { CoursesPage, CourseDetailsPage } from "@/pages/course";
 import { CohortsPage, CohortDetailsPage } from "@/pages/cohort";
 import { ClassesPage } from "@/pages/class";
 import { EnrollmentsPage } from "@/pages/enrollment";
-import { EnquiriesPage, EnquiryFormPage } from "@/pages/enquiry";
+import {
+  EnquiriesPage,
+  EnquiryFormPage,
+  PublicEnquiryFormPage,
+} from "@/pages/enquiry";
 import { PaymentsPage } from "@/pages/payment";
 import { FeedbacksPage } from "@/pages/feedback";
 import { AuditLogsPage } from "@/pages/audit";
@@ -25,6 +29,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/enquiry" element={<PublicEnquiryFormPage />} />
+          <Route path="/enquiry/:id" element={<PublicEnquiryFormPage />} />
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<OrganizationsPage />} />
             <Route path="organizations" element={<OrganizationsPage />} />
