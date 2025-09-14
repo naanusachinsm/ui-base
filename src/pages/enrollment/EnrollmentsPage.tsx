@@ -132,14 +132,6 @@ export default function EnrollmentsPage() {
   const [rowSelection, setRowSelection] = useState({});
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
 
-  // Debug enrollments state changes
-  useEffect(() => {
-    console.log("Enrollments state changed:", {
-      enrollments,
-      length: enrollments.length,
-      firstEnrollment: enrollments[0],
-    });
-  }, [enrollments]);
   const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -169,7 +161,6 @@ export default function EnrollmentsPage() {
     const fetchEnrollments = async () => {
       try {
         setLoading(true);
-        console.log("Fetching enrollments from API...");
         const response = await enrollmentService.getEnrollments({
           page: currentPage,
           limit: pageSize,
@@ -180,30 +171,13 @@ export default function EnrollmentsPage() {
               : undefined,
         });
 
-        console.log("Enrollment API response:", response);
-
         // Only update state if component is still mounted
         if (!isCancelled) {
           if (response.success && response.data) {
-            console.log("Setting enrollments from API:", response.data.data);
-            console.log("First enrollment structure:", response.data.data[0]);
-            console.log(
-              "First enrollment keys:",
-              Object.keys(response.data.data[0] || {})
-            );
-            console.log(
-              "First enrollment student:",
-              response.data.data[0]?.student
-            );
-            console.log(
-              "First enrollment cohort:",
-              response.data.data[0]?.cohort
-            );
             setEnrollments(response.data.data);
             setTotalPages(response.data.totalPages);
             setTotalItems(response.data.total);
           } else {
-            console.log("API response failed, no data available");
             setEnrollments([]);
             setTotalPages(0);
             setTotalItems(0);
@@ -214,7 +188,6 @@ export default function EnrollmentsPage() {
         console.error("Error fetching enrollments:", error);
         // Handle error without fallback data
         if (!isCancelled) {
-          console.log("API error, no data available");
           setEnrollments([]);
           setTotalPages(0);
           setTotalItems(0);
@@ -694,14 +667,6 @@ export default function EnrollmentsPage() {
       columnVisibility,
       rowSelection,
     },
-  });
-
-  // Debug table data
-  console.log("Table debug info:", {
-    filteredEnrollmentsLength: filteredEnrollments.length,
-    tableRowsLength: table.getRowModel().rows.length,
-    tableRowModel: table.getRowModel(),
-    columnsLength: columns.length,
   });
 
   return (

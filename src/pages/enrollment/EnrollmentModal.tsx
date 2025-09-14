@@ -30,6 +30,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import type {
   Enrollment,
   CreateEnrollmentRequest,
@@ -52,7 +60,9 @@ import type { Cohort } from "@/api/cohortTypes";
 const enrollmentFormSchema = z.object({
   studentId: z.string().min(1, "Student is required"),
   cohortId: z.string().min(1, "Cohort is required"),
-  enrollmentDate: z.string().min(1, "Enrollment date is required"),
+  enrollmentDate: z.date({
+    message: "Enrollment date is required",
+  }),
   status: z.nativeEnum(EnrollmentStatus),
   paymentStatus: z.nativeEnum(PaymentStatus),
   paymentId: z.string().optional(),
@@ -88,7 +98,7 @@ export default function EnrollmentModal({
     defaultValues: {
       studentId: "",
       cohortId: "",
-      enrollmentDate: "",
+      enrollmentDate: new Date(),
       status: EnrollmentStatus.PENDING,
       paymentStatus: PaymentStatus.PENDING,
       paymentId: "",
@@ -143,7 +153,7 @@ export default function EnrollmentModal({
         form.reset({
           studentId: enrollment.studentId.toString(),
           cohortId: enrollment.cohortId.toString(),
-          enrollmentDate: enrollment.enrollmentDate,
+          enrollmentDate: new Date(enrollment.enrollmentDate),
           status: enrollment.status,
           paymentStatus: enrollment.paymentStatus,
           paymentId: enrollment.paymentId || "",
@@ -154,7 +164,7 @@ export default function EnrollmentModal({
         form.reset({
           studentId: "",
           cohortId: "",
-          enrollmentDate: new Date().toISOString().split("T")[0], // Today's date
+          enrollmentDate: new Date(), // Today's date
           status: EnrollmentStatus.PENDING,
           paymentStatus: PaymentStatus.PENDING,
           paymentId: "",
@@ -172,7 +182,7 @@ export default function EnrollmentModal({
       const cleanData = {
         studentId: parseInt(data.studentId),
         cohortId: parseInt(data.cohortId),
-        enrollmentDate: data.enrollmentDate,
+        enrollmentDate: data.enrollmentDate.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
         status: data.status,
         paymentStatus: data.paymentStatus,
         paymentId: data.paymentId || undefined,
@@ -339,11 +349,45 @@ export default function EnrollmentModal({
                 control={form.control}
                 name="enrollmentDate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Enrollment Date *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} readOnly={isReadOnly} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={`w-full pl-3 text-left font-normal ${
+                              !field.value && "text-muted-foreground"
+                            } ${
+                              isReadOnly
+                                ? "cursor-not-allowed opacity-50"
+                                : "cursor-pointer"
+                            }`}
+                            disabled={isReadOnly}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      {!isReadOnly && (
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      )}
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
